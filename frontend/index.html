@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AdaptiveShop - Intelligent Network- and Device-Adaptive E-Commerce Web Store. Dynamically adapts imagery, animations, 3D interaction, and content delivery based on live client environment.">
+    <meta name="theme-color" content="#f4f7fb">
+
+    <title>AdaptiveShop — Intelligent Adaptive E-Commerce</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="high-mode">
+
+    <!-- ========================================= -->
+    <!-- CONFIG BUTTON (Top-Right Floating Button) -->
+    <!-- ========================================= -->
+    <button id="configButton" class="config-button" title="Open Adaptive Engine Configuration" aria-label="Open Adaptive Engine Configuration">
+        ⚙ Config
+    </button>
+
+
+    <!-- ========================================= -->
+    <!-- CONFIG MODAL OVERLAY -->
+    <!-- ========================================= -->
+    <div id="configOverlay" class="config-overlay" role="dialog" aria-modal="true" aria-labelledby="configTitle">
+
+        <div class="config-panel">
+
+            <div class="config-header">
+                <div>
+                    <span class="eyebrow">ADAPTIVE ENGINE</span>
+                    <h2 id="configTitle">Adaptive Configuration</h2>
+                </div>
+                <button id="closeConfig" class="close-button" aria-label="Close configuration modal">×</button>
+            </div>
+
+            <p class="config-subtitle">
+                Inspect live browser telemetry or override network and device tiers to demonstrate hackathon conditions.
+            </p>
+
+            <!-- SIMULATION CONTROLS -->
+            <div class="config-grid">
+
+                <div class="control">
+                    <label for="networkMode">Network Simulation</label>
+                    <select id="networkMode">
+                        <option value="AUTO">AUTO (Live Runtime Detection)</option>
+                        <option value="HIGH">HIGH (Fast 5G / Broadband)</option>
+                        <option value="MEDIUM">MEDIUM (Standard 4G / Wi-Fi)</option>
+                        <option value="LOW">LOW (Slow 3G / Constrained)</option>
+                    </select>
+                </div>
+
+                <div class="control">
+                    <label for="deviceMode">Device Simulation</label>
+                    <select id="deviceMode">
+                        <option value="AUTO">AUTO (Live Runtime Detection)</option>
+                        <option value="HIGH">HIGH (8+ Cores & High RAM)</option>
+                        <option value="MEDIUM">MEDIUM (4-7 Cores Balanced)</option>
+                        <option value="LOW">LOW (Low Cores / Budget Device)</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <p class="config-note">
+                <strong>Weakest Link Rule:</strong> AUTO = actual browser API detection · The final experience tier is determined by the lowest resource condition.
+            </p>
+
+            <!-- STATUS CARDS -->
+            <div class="status-grid">
+
+                <!-- NETWORK STATUS -->
+                <div class="status-card">
+                    <div class="status-title">
+                        <span>Network Status</span>
+                        <b id="networkBadge" class="badge">--</b>
+                    </div>
+
+                    <strong id="networkLevel" class="big-status">--</strong>
+
+                    <div class="status-row">
+                        <span>Active Mode</span>
+                        <b id="networkModeDisplay">AUTO</b>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Effective Type</span>
+                        <b id="networkType">--</b>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Browser Estimate</span>
+                        <b id="browserSpeed">--</b>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Measured Bandwidth</span>
+                        <b id="measuredSpeed">--</b>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Round Trip Time (RTT)</span>
+                        <b id="networkRTT">--</b>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Online Status</span>
+                        <b id="onlineStatus">--</b>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Save Data Mode</span>
+                        <b id="saveDataStatus">No</b>
+                    </div>
+
+                    <div class="status-action-row">
+                        <button id="runSpeedTestBtn" class="secondary-btn">⚡ Run Speed Test</button>
+                    </div>
+                </div>
+
+                <!-- DEVICE STATUS -->
+                <div class="status-card">
+                    <div class="status-title">
+                        <span>Device Status</span>
+                        <b id="deviceBadge" class="badge">--</b>
+                    </div>
+
+                    <strong id="deviceLevel" class="big-status">--</strong>
+
+                    <div class="status-row">
+                        <span>Active Mode</span>
+                        <b id="deviceModeDisplay">AUTO</b>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Logical CPU Cores</span>
+                        <b id="cpuCores">--</b>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Device Memory</span>
+                        <b id="deviceMemory">--</b>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Platform / OS</span>
+                        <b id="platform">--</b>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Form Factor</span>
+                        <b id="deviceType">--</b>
+                    </div>
+
+                    <div class="status-row">
+                        <span>Concurrency Tier</span>
+                        <b id="concurrencyTier">--</b>
+                    </div>
+
+                    <div class="status-row">
+                        <span>GPU Accelerator</span>
+                        <b id="gpuInfo" class="truncate-cell">--</b>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ADAPTIVE DECISION CARD -->
+            <div class="decision-card">
+                <div class="decision-header">
+                    <span>ADAPTIVE DECISION (Weakest Link Rule)</span>
+                    <span class="decision-pill" id="decisionPill">ENGINE ACTIVE</span>
+                </div>
+                <strong id="adaptiveMode">--</strong>
+                <p id="adaptiveDescription">--</p>
+            </div>
+
+            <!-- CURRENT DELIVERY STRATEGY -->
+            <div class="delivery">
+                <h3>Delivery Strategy</h3>
+                <div class="delivery-grid">
+                    <div>
+                        <span>Images</span>
+                        <b id="configImageQuality">--</b>
+                    </div>
+                    <div>
+                        <span>Products</span>
+                        <b id="configProductCount">--</b>
+                    </div>
+                    <div>
+                        <span>Animations</span>
+                        <b id="configAnimations">--</b>
+                    </div>
+                    <div>
+                        <span>3D Effects</span>
+                        <b id="config3DEffects">--</b>
+                    </div>
+                    <div>
+                        <span>Recommendations</span>
+                        <b id="configRecommendations">--</b>
+                    </div>
+                    <div>
+                        <span>Prefetch</span>
+                        <b id="configPrefetch">--</b>
+                    </div>
+                    <div>
+                        <span>JavaScript</span>
+                        <b id="configJS">--</b>
+                    </div>
+                    <div>
+                        <span>Backend Sync</span>
+                        <b id="configBackendSync">--</b>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REAL BROWSER TELEMETRY & WEB VITALS -->
+            <div class="telemetry-section">
+                <h3>Real Browser Performance Telemetry</h3>
+                <p class="telemetry-note">Actual measurements captured via Navigation & Performance Observer APIs (no fake numbers).</p>
+
+                <div class="telemetry-grid">
+                    <div class="telemetry-card">
+                        <span>LCP (Largest Contentful Paint)</span>
+                        <strong id="perfLCP">Measuring...</strong>
+                        <small>Target: &lt; 2.5s</small>
+                    </div>
+
+                    <div class="telemetry-card">
+                        <span>CLS (Cumulative Layout Shift)</span>
+                        <strong id="perfCLS">0.000</strong>
+                        <small>Target: &lt; 0.1</small>
+                    </div>
+
+                    <div class="telemetry-card">
+                        <span>INP (Input Responsiveness)</span>
+                        <strong id="perfINP">Ready (Pending input)</strong>
+                        <small>Target: &lt; 200ms</small>
+                    </div>
+
+                    <div class="telemetry-card">
+                        <span>Page Load Time</span>
+                        <strong id="perfPageLoad">Measuring...</strong>
+                        <small>Window Load Event</small>
+                    </div>
+
+                    <div class="telemetry-card">
+                        <span>DOMContentLoaded</span>
+                        <strong id="perfDomLoaded">Measuring...</strong>
+                        <small>DOM Parsed & Ready</small>
+                    </div>
+
+                    <div class="telemetry-card">
+                        <span>Total Transferred</span>
+                        <strong id="perfResourceCount">--</strong>
+                        <small id="perfTransferSize">--</small>
+                    </div>
+
+                    <div class="telemetry-card">
+                        <span>Image Payload</span>
+                        <strong id="perfImageCount">--</strong>
+                        <small id="perfImageSize">--</small>
+                    </div>
+
+                    <div class="telemetry-card">
+                        <span>JavaScript Payload</span>
+                        <strong id="perfJSCount">--</strong>
+                        <small id="perfJSSize">--</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- REAL E-COMMERCE MAIN STOREFRONT -->
+    <!-- ========================================= -->
+    <main class="shop-container">
+
+        <!-- HEADER & NAVBAR -->
+        <header class="header">
+            <div class="brand-line">
+                <a href="#home" class="logo" aria-label="AdaptiveShop Home">
+                    Adaptive<span>Shop</span>
+                </a>
+                <p class="tagline">
+                    "One Web App. Every Network. Every Device."
+                </p>
+            </div>
+        </header>
+
+        <!-- RESPONSIVE NAVBAR -->
+        <nav class="navbar" aria-label="Main Navigation">
+            <div class="nav-links">
+                <a href="#home">Home</a>
+                <a href="#categories">Categories</a>
+                <a href="#products">Products</a>
+                <a href="#recommendations" class="nav-rec-link">Recommendations</a>
+                <a href="#features">Adaptive Engine</a>
+            </div>
+
+            <!-- SEARCH BAR IN NAVBAR -->
+            <div class="nav-search-box">
+                <span class="search-icon" aria-hidden="true">🔍</span>
+                <input
+                    type="search"
+                    id="productSearchInput"
+                    placeholder="Search products, gear, specs..."
+                    aria-label="Search catalog products"
+                >
+                <button id="clearSearchBtn" class="clear-search" aria-label="Clear search" style="display: none;">✕</button>
+            </div>
+
+            <div class="nav-actions">
+                <button class="cart-button" id="cartButton" aria-label="View shopping cart">
+                    🛒 Cart <span id="cartCount">0</span>
+                </button>
+            </div>
+        </nav>
+
+
+        <!-- ========================================= -->
+        <!-- HERO SECTION -->
+        <!-- ========================================= -->
+        <section id="home" class="hero">
+
+            <div class="hero-content">
+                <span class="eyebrow">NETWORK &amp; DEVICE ADAPTIVE ARCHITECTURE</span>
+                <h1>
+                    Technology that <span>adapts to you.</span>
+                </h1>
+                <p>
+                    AdaptiveShop automatically scales visual fidelity, 3D interactions, media resolution, and network payloads dynamically based on your live runtime conditions.
+                </p>
+                <div class="hero-buttons">
+                    <button class="hero-button" onclick="scrollToProducts()">
+                        Explore Adaptive Catalog →
+                    </button>
+                    <button class="hero-secondary-btn" onclick="openConfigModal()">
+                        Configure Tiers ⚙
+                    </button>
+                </div>
+            </div>
+
+            <div class="hero-visual" id="heroVisualContainer" aria-hidden="true">
+                <div class="orb orb-1"></div>
+                <div class="orb orb-2"></div>
+                <div class="orb orb-3"></div>
+                <div class="floating-device" title="Flagship Adaptive Engine Active">
+                    ⚡
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ========================================= -->
+        <!-- LIVE STATUS INDICATOR (SUBTLE E-COMMERCE PILL) -->
+        <!-- ========================================= -->
+        <div class="live-status">
+            <div class="live-status-info">
+                <span class="live-dot" id="liveStatusDot"></span>
+                <span>Adaptive Delivery:</span>
+                <strong id="shopStatus">Detecting environment...</strong>
+            </div>
+            <button class="status-config-link" onclick="openConfigModal()">
+                Engine Telemetry ⚙
+            </button>
+        </div>
+
+
+        <!-- ========================================= -->
+        <!-- CATEGORIES SECTION -->
+        <!-- ========================================= -->
+        <section id="categories" class="section">
+
+            <div class="section-heading">
+                <span class="eyebrow">CURATED COLLECTIONS</span>
+                <h2>Shop by Category</h2>
+                <p>Explore gear engineered for peak speed and precision.</p>
+            </div>
+
+            <div class="categories">
+                <div class="category-card active" data-cat="ALL" onclick="filterCategory('ALL')">
+                    <span class="category-icon">✨</span>
+                    <strong>All Products</strong>
+                    <small>Full adaptive catalog</small>
+                </div>
+
+                <div class="category-card" data-cat="SMARTPHONES" onclick="filterCategory('SMARTPHONES')">
+                    <span class="category-icon">📱</span>
+                    <strong>Smartphones</strong>
+                    <small>Next-gen 5G phones</small>
+                </div>
+
+                <div class="category-card" data-cat="LAPTOPS" onclick="filterCategory('LAPTOPS')">
+                    <span class="category-icon">💻</span>
+                    <strong>Laptops</strong>
+                    <small>Pro workstation laptops</small>
+                </div>
+
+                <div class="category-card" data-cat="AUDIO" onclick="filterCategory('AUDIO')">
+                    <span class="category-icon">🎧</span>
+                    <strong>Audio</strong>
+                    <small>Spatial & ANC acoustics</small>
+                </div>
+
+                <div class="category-card" data-cat="ACCESSORIES" onclick="filterCategory('ACCESSORIES')">
+                    <span class="category-icon">⌚</span>
+                    <strong>Accessories</strong>
+                    <small>Wearables & peripherals</small>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ========================================= -->
+        <!-- FEATURED PRODUCTS SECTION -->
+        <!-- ========================================= -->
+        <section id="products" class="section">
+
+            <div class="section-heading product-heading">
+                <div>
+                    <span class="eyebrow">ADAPTIVE PAYLOAD</span>
+                    <h2>Featured Products</h2>
+                    <p id="productMode">Loading dynamic catalog...</p>
+                </div>
+
+                <span id="productCount" class="product-count">
+                    0 products
+                </span>
+            </div>
+
+            <div id="productGrid" class="product-grid">
+                <!-- Dynamically rendered via renderProducts() -->
+            </div>
+
+            <div id="noResultsNotice" class="no-results" style="display: none;">
+                <p>No products match your search query. Try clearing your filters.</p>
+                <button class="secondary-btn" onclick="clearSearchFilter()">Reset Catalog</button>
+            </div>
+
+        </section>
+
+
+        <!-- ========================================= -->
+        <!-- RECOMMENDATIONS (Visible in HIGH & MEDIUM, hidden in LOW) -->
+        <!-- ========================================= -->
+        <section id="recommendations" class="recommendations">
+
+            <div class="recommendations-content">
+                <span class="eyebrow">SMART RECOMMENDATIONS</span>
+                <h2>Recommended For You</h2>
+                <p>
+                    Curated flagship tech delivered dynamically because your current environment supports enriched visual bandwidth.
+                </p>
+            </div>
+
+            <div class="recommendations-grid" id="recommendationsGrid">
+                <!-- Dynamically populated in HIGH/MEDIUM -->
+            </div>
+
+        </section>
+
+
+        <!-- ========================================= -->
+        <!-- ADAPTIVE FEATURES (VALUE PROPOSITION) -->
+        <!-- ========================================= -->
+        <section id="features" class="section">
+
+            <div class="section-heading">
+                <span class="eyebrow">ENGINE INTELLIGENCE</span>
+                <h2>Adaptive Delivery Under the Hood</h2>
+                <p>Real-time optimization matrix running directly in your browser.</p>
+            </div>
+
+            <div class="features">
+
+                <div class="feature-card">
+                    <span class="feature-icon">🖼️</span>
+                    <div>
+                        <strong>Image Resolution</strong>
+                        <p id="imageFeature">Dynamic Quality</p>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">⚡</span>
+                    <div>
+                        <strong>JavaScript Pipeline</strong>
+                        <p id="jsFeature">Adaptive Execution</p>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">✨</span>
+                    <div>
+                        <strong>Animation Engine</strong>
+                        <p id="animationFeature">Adaptive Rendering</p>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon">🚀</span>
+                    <div>
+                        <strong>Asset Prefetch</strong>
+                        <p id="prefetchFeature">Dynamic Preload</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <div class="footer-brand">
+                <strong>Adaptive<span>Shop</span></strong>
+                <p>One Web App. Every Network. Every Device.</p>
+            </div>
+            <div class="footer-meta">
+                <span>Designed for high performance across all screens and connections. Weakest link runtime active.</span>
+            </div>
+        </footer>
+
+    </main>
+
+
+    <!-- ========================================= -->
+    <!-- SLIDE-OUT CART DRAWER -->
+    <!-- ========================================= -->
+    <div id="cartDrawerOverlay" class="cart-drawer-overlay" aria-hidden="true">
+        <aside class="cart-drawer" role="dialog" aria-labelledby="cartDrawerTitle" aria-modal="true">
+            <div class="cart-drawer-header">
+                <div>
+                    <span class="eyebrow">YOUR BAG</span>
+                    <h2 id="cartDrawerTitle">Shopping Cart</h2>
+                </div>
+                <button id="closeCartDrawer" class="close-button" aria-label="Close cart">×</button>
+            </div>
+
+            <div id="cartItemsList" class="cart-items-list">
+                <!-- Dynamically rendered -->
+            </div>
+
+            <div class="cart-drawer-footer">
+                <div class="cart-subtotal-row">
+                    <span>Subtotal</span>
+                    <strong id="cartSubtotal">₹0</strong>
+                </div>
+                <p class="cart-note">Taxes & shipping calculated at checkout. Adaptive fast checkout active.</p>
+                <button id="checkoutButton" class="hero-button checkout-btn">
+                    Proceed to Checkout →
+                </button>
+            </div>
+        </aside>
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- PRODUCT QUICK VIEW MODAL -->
+    <!-- ========================================= -->
+    <div id="productModalOverlay" class="product-modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="product-modal">
+            <button id="closeProductModal" class="close-button" aria-label="Close details modal">×</button>
+            <div id="productModalContent" class="product-modal-content">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- SCRIPTS -->
+    <script src="adaptive.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
