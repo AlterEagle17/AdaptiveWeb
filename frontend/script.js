@@ -2774,9 +2774,6 @@ async function init() {
     updateCart();
 
 
-    console.log(
-        "[AdaptiveWeb] AdaptiveShop initialized"
-    );
 
 }
 
