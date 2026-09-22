@@ -2593,11 +2593,7 @@ window.addEventListener(
         }
     );
 
-    setInterval(
-        logPerformanceToConsole,
-        1000
-    );
-
+    
 }
 
 
