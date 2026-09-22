@@ -1,0 +1,467 @@
+/* =========================================================
+   ADAPTIVESHOP — MODERN E-COMMERCE UI
+   Blue + Yellow + White + Green commerce theme
+   Paste this at the VERY END of style.css
+   ========================================================= */
+
+:root {
+    --shop-blue: #2874f0;
+    --shop-blue-dark: #1557c0;
+    --shop-yellow: #ffc107;
+    --shop-orange: #ff9f00;
+    --shop-green: #26a541;
+    --shop-red: #e53935;
+    --shop-bg: #f1f3f6;
+    --shop-white: #ffffff;
+    --shop-border: #e0e0e0;
+    --shop-text: #212121;
+    --shop-muted: #6b7280;
+}
+
+/* =========================
+   MAIN STORE
+   ========================= */
+
+body {
+    background: var(--shop-bg) !important;
+    color: var(--shop-text);
+}
+
+.shop-container {
+    max-width: 1400px;
+    padding-top: 14px;
+}
+
+/* =========================
+   BRAND
+   ========================= */
+
+.header {
+    margin-bottom: 10px;
+}
+
+.brand-line {
+    padding: 4px 4px 10px;
+}
+
+.logo {
+    color: var(--shop-blue);
+    font-size: 1.9rem;
+    font-weight: 800;
+}
+
+.logo span {
+    background: linear-gradient(135deg, #2874f0, #00a8ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+/* =========================
+   NAVBAR
+   ========================= */
+
+.navbar {
+    background: var(--shop-blue) !important;
+    border: none !important;
+    border-radius: 4px;
+    padding: 10px 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 3px 10px rgba(40, 116, 240, 0.25);
+}
+
+.nav-links a {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.nav-links a:hover {
+    color: #ffe082 !important;
+}
+
+.nav-search-box {
+    background: #ffffff !important;
+    border: none !important;
+    border-radius: 4px;
+    max-width: 500px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+}
+
+.nav-search-box input {
+    color: #212121 !important;
+}
+
+.nav-search-box input::placeholder {
+    color: #888888 !important;
+}
+
+/* =========================
+   CART BUTTON
+   ========================= */
+
+.cart-button {
+    background: var(--shop-yellow) !important;
+    border: none !important;
+    color: #212121 !important;
+    border-radius: 4px;
+    font-weight: 700;
+    box-shadow: none !important;
+}
+
+.cart-button:hover {
+    background: #ffd54f !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.cart-button span {
+    background: #ffffff !important;
+    color: var(--shop-blue) !important;
+}
+
+/* =========================
+   HERO
+   ========================= */
+
+.hero {
+    background:
+        linear-gradient(
+            120deg,
+            #ffffff 0%,
+            #eef5ff 55%,
+            #fff8df 100%
+        ) !important;
+
+    border: 1px solid #dce4ee !important;
+    border-radius: 8px;
+    padding: 42px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+
+.hero h1 {
+    color: #172033;
+}
+
+.hero h1 span {
+    background: linear-gradient(
+        135deg,
+        #2874f0,
+        #7b2ff7
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.eyebrow {
+    color: var(--shop-blue) !important;
+}
+
+.hero-button {
+    background: var(--shop-blue) !important;
+    color: #ffffff !important;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(40, 116, 240, 0.3) !important;
+}
+
+.hero-button:hover {
+    background: var(--shop-blue-dark) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 18px rgba(40, 116, 240, 0.35) !important;
+}
+
+.hero-secondary-btn {
+    background: #ffffff !important;
+    color: #212121 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4px;
+}
+
+/* =========================
+   LIVE STATUS
+   ========================= */
+
+.live-status {
+    background: #ffffff !important;
+    border: 1px solid var(--shop-border) !important;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.live-status strong {
+    color: var(--shop-blue) !important;
+}
+
+/* =========================
+   CATEGORY CARDS
+   ========================= */
+
+.categories {
+    gap: 14px;
+}
+
+.category-card {
+    background: #ffffff !important;
+    border: 1px solid var(--shop-border) !important;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    position: relative;
+    overflow: hidden;
+}
+
+.category-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        #2874f0,
+        #7b2ff7
+    );
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.category-card:hover,
+.category-card.active {
+    border-color: #b9d0f7 !important;
+    box-shadow: 0 6px 18px rgba(40, 116, 240, 0.13);
+}
+
+.category-card:hover::before,
+.category-card.active::before {
+    opacity: 1;
+}
+
+.category-card.active {
+    background: linear-gradient(
+        135deg,
+        #f7fbff,
+        #eef5ff
+    ) !important;
+}
+
+.category-icon {
+    font-size: 1.9rem;
+}
+
+/* =========================
+   PRODUCT GRID
+   ========================= */
+
+.product-grid {
+    gap: 16px;
+}
+
+.product {
+    background: #ffffff !important;
+    border: 1px solid var(--shop-border) !important;
+    border-radius: 5px;
+    box-shadow: 0 2px 9px rgba(0, 0, 0, 0.07);
+    overflow: hidden;
+}
+
+.product:hover {
+    border-color: #b8d0f5 !important;
+    box-shadow: 0 8px 22px rgba(40, 116, 240, 0.14);
+}
+
+.product-info {
+    background: #ffffff !important;
+}
+
+.product-name {
+    color: #212121 !important;
+}
+
+.product-price {
+    color: var(--shop-green) !important;
+    font-weight: 800;
+}
+
+.product-category {
+    color: var(--shop-blue) !important;
+}
+
+.product-badge {
+    background: var(--shop-yellow) !important;
+    color: #5f4300 !important;
+    border: none !important;
+    backdrop-filter: none;
+}
+
+.product-count {
+    background: #e8f1ff !important;
+    border: 1px solid #c8dcfb !important;
+    color: var(--shop-blue) !important;
+}
+
+/* =========================
+   PRODUCT IMAGE
+   ========================= */
+
+.product-image {
+    background: #f5f7fa !important;
+}
+
+.product-image img {
+    transition:
+        transform 0.35s ease,
+        filter 0.3s ease;
+}
+
+/* =========================
+   RECOMMENDATIONS
+   ========================= */
+
+.recommendations {
+    background:
+        linear-gradient(
+            135deg,
+            #edf5ff,
+            #f8f1ff
+        ) !important;
+
+    border: 1px solid #d9e4f4 !important;
+    border-radius: 7px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+/* =========================
+   FEATURE CARDS
+   ========================= */
+
+.feature-card {
+    background: #ffffff !important;
+    border: 1px solid var(--shop-border) !important;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.feature-icon {
+    background: #eaf2ff !important;
+    color: var(--shop-blue) !important;
+}
+
+/* =========================
+   ADAPTIVE CONFIG / TELEMETRY
+   ========================= */
+
+.status-card,
+.decision-card,
+.delivery,
+.telemetry-card {
+    background: #ffffff !important;
+    border-color: var(--shop-border) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.decision-pill {
+    background: #e8f1ff !important;
+    color: var(--shop-blue) !important;
+}
+
+/* =========================
+   PRODUCT MODAL
+   ========================= */
+
+.product-modal {
+    background: #ffffff !important;
+    border: none !important;
+    border-radius: 7px;
+    padding: 0 !important;
+    overflow: hidden;
+    box-shadow: 0 20px 55px rgba(15, 23, 42, 0.25) !important;
+}
+
+.product-modal-content {
+    background: #ffffff !important;
+    padding: 32px;
+}
+
+.product-modal-image {
+    background: #f5f7fa !important;
+}
+
+.product-modal-price {
+    color: var(--shop-green) !important;
+}
+
+.product-modal-bottom {
+    border-top-color: #e5e7eb !important;
+}
+
+/* =========================
+   FOOTER
+   ========================= */
+
+.footer {
+    border-top: 1px solid var(--shop-border);
+}
+
+.footer-brand strong {
+    color: var(--shop-blue);
+}
+
+/* =========================================================
+   ADAPTIVE MODE PRESERVATION
+   ========================================================= */
+
+/* HIGH = richer commerce experience */
+
+.high-mode .hero {
+    border-color: rgba(40, 116, 240, 0.3) !important;
+    box-shadow:
+        0 14px 38px rgba(40, 116, 240, 0.14),
+        0 0 28px rgba(123, 47, 247, 0.08);
+}
+
+.high-mode .product:hover {
+    border-color: #8bb5f5 !important;
+    box-shadow:
+        0 12px 30px rgba(40, 116, 240, 0.18),
+        0 0 18px rgba(123, 47, 247, 0.08);
+}
+
+/* MEDIUM = clean commerce */
+
+.medium-mode .product:hover {
+    box-shadow: 0 6px 16px rgba(40, 116, 240, 0.10);
+}
+
+/* LOW = lightweight */
+
+.low-mode .hero,
+.low-mode .product,
+.low-mode .category-card {
+    box-shadow: none !important;
+}
+
+.low-mode .product:hover,
+.low-mode .category-card:hover {
+    box-shadow: none !important;
+}
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 640px) {
+
+    .navbar {
+        background: var(--shop-blue) !important;
+    }
+
+    .hero {
+        padding: 28px 20px !important;
+    }
+
+    .product-grid {
+        gap: 12px;
+    }
+
+    .category-card {
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+}
