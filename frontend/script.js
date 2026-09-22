@@ -890,6 +890,7 @@ function renderProducts() {
                             src="${escapeHTML(image)}"
                             alt="${escapeHTML(product.name)}"
                             loading="lazy"
+                            onerror="this.onerror=null;this.src='https://placehold.co/1000x700/eef5ff/2874f0?text=AdaptiveShop';"
                         >
 
                         <span class="product-badge">
