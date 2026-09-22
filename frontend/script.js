@@ -1,8 +1,3 @@
-/* =========================================================
-   AdaptiveWeb — Main Storefront
-   Backend remains unchanged
-   ========================================================= */
-
 (function () {
 
     "use strict";
@@ -20,6 +15,7 @@
     let isBackendAvailable = false;
 
     let activeCategory = "ALL";
+
     let searchQuery = "";
 
     const cart = new Map();
@@ -42,7 +38,7 @@
             reviewsCount: 342,
             badge: "✦ Flagship",
             description:
-                "Adaptive 120Hz OLED display with powerful performance and advanced camera system.",
+                "Premium smartphone with OLED display, powerful performance and advanced camera system.",
             image:
                 "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1000&q=85",
             specs: [
@@ -62,7 +58,7 @@
             reviewsCount: 189,
             badge: "✦ Pro Power",
             description:
-                "High-performance laptop designed for developers, creators and professionals.",
+                "High-performance laptop designed for creators, developers and professionals.",
             image:
                 "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1000&q=85",
             specs: [
@@ -122,7 +118,7 @@
             reviewsCount: 147,
             badge: "✦ 120Hz",
             description:
-                "Large professional tablet for entertainment, creativity and productivity.",
+                "Professional tablet for entertainment, creativity and productivity.",
             image:
                 "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=1000&q=85",
             specs: [
@@ -162,7 +158,7 @@
             reviewsCount: 95,
             badge: "✦ 144Hz HDR",
             description:
-                "4K gaming monitor with high refresh rate and HDR support.",
+                "4K gaming display with high refresh rate and HDR support.",
             image:
                 "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=1000&q=85",
             specs: [
@@ -243,42 +239,21 @@
        HELPERS
        ===================================================== */
 
-    function formatPrice(price) {
+    function setText(id, value) {
 
-        return `₹${Number(price || 0).toLocaleString("en-IN")}`;
+        const el =
+            document.getElementById(id);
+
+        if (el) {
+            el.textContent = value;
+        }
 
     }
 
 
-    function adaptiveImage(url, config) {
+    function formatPrice(value) {
 
-        if (!url) return "";
-
-        try {
-
-            const parsed = new URL(url);
-
-            if (config && config.imageWidth) {
-                parsed.searchParams.set(
-                    "w",
-                    config.imageWidth
-                );
-            }
-
-            if (config && config.imageQuality) {
-                parsed.searchParams.set(
-                    "q",
-                    config.imageQuality
-                );
-            }
-
-            return parsed.toString();
-
-        } catch {
-
-            return url;
-
-        }
+        return `₹${Number(value || 0).toLocaleString("en-IN")}`;
 
     }
 
@@ -295,18 +270,126 @@
     }
 
 
+    function adaptiveImage(url, config) {
+
+        if (!url) return "";
+
+        try {
+
+            const parsed =
+                new URL(url);
+
+            if (config?.imageWidth) {
+
+                parsed.searchParams.set(
+                    "w",
+                    config.imageWidth
+                );
+
+            }
+
+            if (config?.imageQuality) {
+
+                parsed.searchParams.set(
+                    "q",
+                    config.imageQuality
+                );
+
+            }
+
+            return parsed.toString();
+
+        } catch {
+
+            return url;
+
+        }
+
+    }
+
+
+    /* =====================================================
+       GET ADAPTIVE CONFIG
+       ===================================================== */
+
+    function getAdaptiveConfig() {
+
+        if (
+            window.AdaptiveEngine &&
+            typeof window.AdaptiveEngine.detectNetwork ===
+            "function" &&
+            typeof window.AdaptiveEngine.detectDevice ===
+            "function" &&
+            typeof window.AdaptiveEngine.calculateAdaptiveMode ===
+            "function"
+        ) {
+
+            const network =
+                window.AdaptiveEngine.detectNetwork();
+
+            const device =
+                window.AdaptiveEngine.detectDevice();
+
+            return {
+
+                network,
+                device,
+
+                config:
+                    window.AdaptiveEngine
+                        .calculateAdaptiveMode(
+                            network.level,
+                            device.level
+                        )
+
+            };
+
+        }
+
+
+        return {
+
+            network: {
+                level: "UNKNOWN"
+            },
+
+            device: {
+                level: "UNKNOWN"
+            },
+
+            config: {
+
+                tier: "MEDIUM",
+
+                mode: "BALANCED",
+
+                imageWidth: 600,
+
+                imageQuality: 65,
+
+                animations: "REDUCED",
+
+                recommendations: "LIMITED",
+
+                prefetch: "OFF",
+
+                jsStrategy: "BALANCED",
+
+                description:
+                    "Adaptive delivery active."
+
+            }
+
+        };
+
+    }
+
+
     /* =====================================================
        BACKEND SYNC
        ===================================================== */
 
     async function syncWithBackend() {
-
-        const backendStatus =
-            document.getElementById("configBackendSync");
-
-        if (backendStatus) {
-            backendStatus.textContent = "Connecting...";
-        }
 
         try {
 
@@ -324,7 +407,8 @@
                 await fetch(
                     `${API_BASE_URL}/products`,
                     {
-                        signal: controller.signal
+                        signal:
+                            controller.signal
                     }
                 );
 
@@ -333,9 +417,7 @@
 
 
             if (!response.ok) {
-                throw new Error(
-                    `HTTP ${response.status}`
-                );
+                throw new Error("API unavailable");
             }
 
 
@@ -343,95 +425,91 @@
                 await response.json();
 
 
-            if (Array.isArray(data) && data.length) {
+            if (
+                Array.isArray(data) &&
+                data.length > 0
+            ) {
 
                 currentProducts =
-                    data.map((item, index) => {
+                    data.map(
+                        (item, index) => {
 
-                        const fallback =
-                            localProducts[
-                                index %
-                                localProducts.length
-                            ];
+                            const fallback =
+                                localProducts[
+                                    index %
+                                    localProducts.length
+                                ];
 
-                        return {
 
-                            id:
-                                item.id ??
-                                fallback.id,
+                            return {
 
-                            name:
-                                item.name ??
-                                fallback.name,
+                                id:
+                                    item.id ??
+                                    fallback.id,
 
-                            category:
-                                String(
-                                    item.category ??
-                                    fallback.category
-                                ).toUpperCase(),
+                                name:
+                                    item.name ??
+                                    fallback.name,
 
-                            price:
-                                Number(
-                                    item.price ??
-                                    fallback.price
-                                ),
+                                category:
+                                    String(
+                                        item.category ??
+                                        fallback.category
+                                    ).toUpperCase(),
 
-                            rating:
-                                Number(
-                                    item.rating ??
-                                    fallback.rating
-                                ),
+                                price:
+                                    Number(
+                                        item.price ??
+                                        fallback.price
+                                    ),
 
-                            reviewsCount:
-                                Number(
-                                    item.reviewCount ??
-                                    item.reviewsCount ??
-                                    fallback.reviewsCount
-                                ),
+                                rating:
+                                    Number(
+                                        item.rating ??
+                                        fallback.rating
+                                    ),
 
-                            badge:
-                                item.badge ??
-                                fallback.badge,
+                                reviewsCount:
+                                    Number(
+                                        item.reviewCount ??
+                                        item.reviewsCount ??
+                                        fallback.reviewsCount
+                                    ),
 
-                            description:
-                                item.description ??
-                                fallback.description,
+                                badge:
+                                    item.badge ??
+                                    fallback.badge,
 
-                            image:
-                                item.imageUrl ??
-                                item.image ??
-                                fallback.image,
+                                description:
+                                    item.description ??
+                                    fallback.description,
 
-                            specs:
-                                Array.isArray(item.specs)
-                                    ? item.specs
-                                    : fallback.specs
+                                image:
+                                    item.imageUrl ??
+                                    item.image ??
+                                    fallback.image,
 
-                        };
+                                specs:
+                                    Array.isArray(item.specs)
+                                        ? item.specs
+                                        : fallback.specs
 
-                    });
+                            };
+
+                        }
+                    );
 
 
                 isBackendAvailable = true;
 
-                if (backendStatus) {
-                    backendStatus.textContent =
-                        "Online • Live API";
-                }
-
             }
 
-        } catch (error) {
-
-            isBackendAvailable = false;
+        } catch {
 
             currentProducts =
                 [...localProducts];
 
-            if (backendStatus) {
-                backendStatus.textContent =
-                    "Fallback • Local Catalog";
-            }
+            isBackendAvailable = false;
 
         }
 
@@ -442,154 +520,15 @@
 
 
     /* =====================================================
-       ADAPTIVE CONFIG
-       ===================================================== */
-
-    function getAdaptiveConfig() {
-
-        let config = {
-
-            tier: "MEDIUM",
-
-            mode: "BALANCED",
-
-            imageWidth: 600,
-
-            imageQuality: 65,
-
-            animations: "REDUCED",
-
-            recommendations: "LIMITED",
-
-            prefetch: "OFF",
-
-            jsStrategy: "BALANCED",
-
-            description:
-                "Balanced delivery for normal network and device conditions."
-
-        };
-
-
-        if (
-            window.AdaptiveEngine &&
-            typeof window.AdaptiveEngine.detectNetwork === "function"
-        ) {
-
-            const net =
-                window.AdaptiveEngine.detectNetwork();
-
-            const dev =
-                window.AdaptiveEngine.detectDevice();
-
-
-            if (
-                typeof window.AdaptiveEngine
-                    .calculateAdaptiveMode === "function"
-            ) {
-
-                config =
-                    window.AdaptiveEngine
-                        .calculateAdaptiveMode(
-                            net.level,
-                            dev.level
-                        );
-
-            }
-
-        }
-
-
-        return config;
-
-    }
-
-
-    function applyAdaptiveUI(config) {
-
-        document.body.classList.remove(
-            "high-mode",
-            "medium-mode",
-            "low-mode"
-        );
-
-
-        if (config.tier === "HIGH") {
-
-            document.body.classList.add(
-                "high-mode"
-            );
-
-        } else if (config.tier === "LOW") {
-
-            document.body.classList.add(
-                "low-mode"
-            );
-
-        } else {
-
-            document.body.classList.add(
-                "medium-mode"
-            );
-
-        }
-
-
-        setText(
-            "adaptiveMode",
-            config.mode || config.tier
-        );
-
-        setText(
-            "adaptiveDescription",
-            config.description ||
-            "Adaptive delivery active."
-        );
-
-        setText(
-            "decisionPill",
-            `${config.tier} TIER`
-        );
-
-        setText(
-            "configImageQuality",
-            `${config.imageQuality || "—"}%`
-        );
-
-        setText(
-            "configAnimations",
-            config.animations || "—"
-        );
-
-        setText(
-            "configRecommendations",
-            config.recommendations || "—"
-        );
-
-        setText(
-            "configPrefetch",
-            config.prefetch || "—"
-        );
-
-        setText(
-            "configJS",
-            config.jsStrategy || "—"
-        );
-
-    }
-
-
-    /* =====================================================
-       PRODUCT RENDERING
+       PRODUCTS
        ===================================================== */
 
     function renderProducts(config) {
 
         const grid =
-            document.getElementById("productGrid");
-
-        const noResults =
-            document.getElementById("noResultsNotice");
+            document.getElementById(
+                "productGrid"
+            );
 
 
         if (!grid) return;
@@ -599,7 +538,9 @@
             [...currentProducts];
 
 
-        if (activeCategory !== "ALL") {
+        if (
+            activeCategory !== "ALL"
+        ) {
 
             products =
                 products.filter(
@@ -611,7 +552,9 @@
         }
 
 
-        if (searchQuery.trim()) {
+        if (
+            searchQuery.trim()
+        ) {
 
             const query =
                 searchQuery
@@ -620,27 +563,34 @@
 
 
             products =
-                products.filter(product =>
+                products.filter(
+                    product =>
 
-                    product.name
-                        .toLowerCase()
-                        .includes(query)
+                        product.name
+                            .toLowerCase()
+                            .includes(query)
 
-                    ||
+                        ||
 
-                    product.description
-                        .toLowerCase()
-                        .includes(query)
+                        product.description
+                            .toLowerCase()
+                            .includes(query)
 
-                    ||
+                        ||
 
-                    product.category
-                        .toLowerCase()
-                        .includes(query)
+                        product.category
+                            .toLowerCase()
+                            .includes(query)
 
                 );
 
         }
+
+
+        const noResults =
+            document.getElementById(
+                "noResultsNotice"
+            );
 
 
         if (!products.length) {
@@ -671,102 +621,131 @@
         grid.innerHTML = "";
 
 
-        products.forEach(product => {
+        products.forEach(
+            product => {
 
-            const card =
-                document.createElement("article");
-
-
-            card.className = "product";
-
-
-            const image =
-                adaptiveImage(
-                    product.image,
-                    config
-                );
+                const card =
+                    document.createElement(
+                        "article"
+                    );
 
 
-            card.innerHTML = `
+                card.className =
+                    "product";
 
-                <div
-                    class="product-image"
-                    onclick="window.AdaptiveShop.openProductModal(${product.id})"
-                >
 
-                    <span class="product-badge">
-                        ${escapeHTML(product.badge)}
-                    </span>
+                const image =
+                    adaptiveImage(
+                        product.image,
+                        config
+                    );
 
-                    <img
-                        src="${escapeHTML(image)}"
-                        alt="${escapeHTML(product.name)}"
-                        loading="lazy"
-                        decoding="async"
-                        width="600"
-                        height="450"
+
+                card.innerHTML = `
+
+                    <div
+                        class="product-image"
+                        onclick="
+                            window.AdaptiveShop
+                                .openProductModal(
+                                    ${product.id}
+                                )
+                        "
                     >
 
-                </div>
-
-
-                <div class="product-info">
-
-                    <div class="product-meta-row">
-
-                        <span class="product-category">
-                            ${escapeHTML(product.category)}
+                        <span class="product-badge">
+                            ${escapeHTML(
+                                product.badge
+                            )}
                         </span>
 
-                        <span class="product-rating">
-                            ★
-                            <b>
-                                ${product.rating}
-                            </b>
-
-                            <small>
-                                (${product.reviewsCount})
-                            </small>
-                        </span>
-
-                    </div>
-
-
-                    <h3
-                        onclick="window.AdaptiveShop.openProductModal(${product.id})"
-                    >
-                        ${escapeHTML(product.name)}
-                    </h3>
-
-
-                    <p>
-                        ${escapeHTML(product.description)}
-                    </p>
-
-
-                    <div class="product-bottom">
-
-                        <strong class="product-price">
-                            ${formatPrice(product.price)}
-                        </strong>
-
-                        <button
-                            class="add-cart"
-                            onclick="window.AdaptiveShop.addToCart(${product.id})"
+                        <img
+                            src="${escapeHTML(image)}"
+                            alt="${escapeHTML(product.name)}"
+                            loading="lazy"
+                            decoding="async"
+                            width="600"
+                            height="450"
                         >
-                            Add +
-                        </button>
 
                     </div>
 
-                </div>
 
-            `;
+                    <div class="product-info">
+
+                        <div class="product-meta-row">
+
+                            <span class="product-category">
+                                ${escapeHTML(
+                                    product.category
+                                )}
+                            </span>
+
+                            <span class="product-rating">
+                                ★
+                                <b>
+                                    ${product.rating}
+                                </b>
+                                <small>
+                                    (${product.reviewsCount})
+                                </small>
+                            </span>
+
+                        </div>
 
 
-            grid.appendChild(card);
+                        <h3
+                            onclick="
+                                window.AdaptiveShop
+                                    .openProductModal(
+                                        ${product.id}
+                                    )
+                            "
+                        >
+                            ${escapeHTML(
+                                product.name
+                            )}
+                        </h3>
 
-        });
+
+                        <p>
+                            ${escapeHTML(
+                                product.description
+                            )}
+                        </p>
+
+
+                        <div class="product-bottom">
+
+                            <strong class="product-price">
+                                ${formatPrice(
+                                    product.price
+                                )}
+                            </strong>
+
+                            <button
+                                class="add-cart"
+                                onclick="
+                                    window.AdaptiveShop
+                                        .addToCart(
+                                            ${product.id}
+                                        )
+                                "
+                            >
+                                Add +
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+
+                grid.appendChild(card);
+
+            }
+        );
 
 
         setText(
@@ -778,804 +757,173 @@
 
 
     /* =====================================================
-       RECOMMENDATIONS
-       ===================================================== */
-
-    function renderRecommendations(config) {
-
-        const section =
-            document.getElementById(
-                "recommendations"
-            );
-
-        const grid =
-            document.getElementById(
-                "recommendationsGrid"
-            );
-
-
-        if (!section || !grid) return;
-
-
-        if (
-            config.recommendations === "OFF"
-        ) {
-
-            section.style.display =
-                "none";
-
-            return;
-
-        }
-
-
-        section.style.display =
-            "block";
-
-
-        grid.innerHTML = "";
-
-
-        const count =
-            config.tier === "HIGH"
-                ? 3
-                : 1;
-
-
-        currentProducts
-            .slice(0, count)
-            .forEach(product => {
-
-                const image =
-                    adaptiveImage(
-                        product.image,
-                        config
-                    );
-
-
-                const card =
-                    document.createElement("div");
-
-
-                card.className =
-                    "rec-card";
-
-
-                card.innerHTML = `
-
-                    <img
-                        src="${escapeHTML(image)}"
-                        alt="${escapeHTML(product.name)}"
-                        loading="lazy"
-                    >
-
-                    <div class="rec-info">
-
-                        <strong>
-                            ${escapeHTML(product.name)}
-                        </strong>
-
-                        <span>
-                            ${formatPrice(product.price)}
-                        </span>
-
-                    </div>
-
-                    <button
-                        class="rec-btn"
-                        onclick="window.AdaptiveShop.addToCart(${product.id})"
-                    >
-                        + Add
-                    </button>
-
-                `;
-
-
-                grid.appendChild(card);
-
-            });
-
-    }
-
-
-    /* =====================================================
-       UPDATE UI
+       MAIN UPDATE
        ===================================================== */
 
     function updateUI() {
 
-        const config =
+        const result =
             getAdaptiveConfig();
 
 
-        applyAdaptiveUI(config);
-
-
-        renderProducts(config);
-
-        renderRecommendations(config);
-
-
-        if (
-            window.AdaptiveEngine &&
-            typeof window.AdaptiveEngine.detectNetwork ===
-            "function"
-        ) {
-
-            const network =
-                window.AdaptiveEngine
-                    .detectNetwork();
-
-
-            const device =
-                window.AdaptiveEngine
-                    .detectDevice();
-
-
-            setText(
-                "networkLevel",
-                network.level || "—"
-            );
-
-            setText(
-                "networkType",
-                network.effectiveType || "—"
-            );
-
-            setText(
-                "browserSpeed",
-                network.browserEstimate != null
-                    ? `${network.browserEstimate} Mbps`
-                    : "Unavailable"
-            );
-
-            setText(
-                "measuredSpeed",
-                network.measuredBandwidth != null
-                    ? `${network.measuredBandwidth} Mbps`
-                    : "Unavailable"
-            );
-
-
-            setText(
-                "deviceLevel",
-                device.level || "—"
-            );
-
-            setText(
-                "deviceType",
-                device.formFactor || "—"
-            );
-
-            setText(
-                "cpuCores",
-                device.cores
-                    ? `${device.cores} Cores`
-                    : "—"
-            );
-
-            setText(
-                "deviceMemory",
-                device.memory != null
-                    ? `${device.memory} GB`
-                    : "Unavailable"
-            );
-
-            setText(
-                "platform",
-                device.platform || "—"
-            );
-
-
-            setText(
-                "shopStatus",
-                `${network.level || "—"} Network · ${device.level || "—"} Device → ${config.tier}`
-            );
-
-        }
-
-    }
-
-
-    /* =====================================================
-       CATEGORY
-       ===================================================== */
-
-    function filterCategory(category) {
-
-        activeCategory =
-            category;
-
-
-        document
-            .querySelectorAll(".category-card")
-            .forEach(card => {
-
-                card.classList.toggle(
-                    "active",
-                    card.dataset.cat === category
-                );
-
-            });
-
-
-        updateUI();
-
-        scrollToProducts();
-
-    }
-
-
-    /* =====================================================
-       SEARCH
-       ===================================================== */
-
-    function handleSearch(event) {
-
-        searchQuery =
-            event.target.value;
-
-
-        const clear =
-            document.getElementById(
-                "clearSearchBtn"
-            );
-
-
-        if (clear) {
-
-            clear.style.display =
-                searchQuery
-                    ? "block"
-                    : "none";
-
-        }
-
-
-        updateUI();
-
-    }
-
-
-    function clearSearchFilter() {
-
-        const input =
-            document.getElementById(
-                "productSearchInput"
-            );
-
-
-        if (input) {
-            input.value = "";
-        }
-
-
-        searchQuery = "";
-
-        activeCategory = "ALL";
-
-
-        document
-            .querySelectorAll(".category-card")
-            .forEach(card => {
-
-                card.classList.toggle(
-                    "active",
-                    card.dataset.cat === "ALL"
-                );
-
-            });
-
-
-        const clear =
-            document.getElementById(
-                "clearSearchBtn"
-            );
-
-
-        if (clear) {
-            clear.style.display = "none";
-        }
-
-
-        updateUI();
-
-    }
-
-
-    /* =====================================================
-       CART
-       ===================================================== */
-
-    function addToCart(productId) {
-
-        const product =
-            currentProducts.find(
-                item =>
-                    String(item.id) ===
-                    String(productId)
-            );
-
-
-        if (!product) return;
-
-
-        if (cart.has(productId)) {
-
-            cart.get(productId).quantity++;
-
-        } else {
-
-            cart.set(
-                productId,
-                {
-                    product,
-                    quantity: 1
-                }
-            );
-
-        }
-
-
-        updateCartUI();
-
-        showToast(
-            `${product.name} added to cart`
+        renderProducts(
+            result.config
+        );
+
+
+        updateConfigValues(
+            result.network,
+            result.device,
+            result.config
         );
 
     }
 
 
-    function removeFromCart(productId) {
+    /* =====================================================
+       CONFIG PANEL
+       ===================================================== */
 
-        cart.delete(productId);
-
-        updateCartUI();
-
-    }
-
-
-    function updateCartQuantity(
-        productId,
-        change
+    function updateConfigValues(
+        network,
+        device,
+        config
     ) {
 
-        const item =
-            cart.get(productId);
-
-
-        if (!item) return;
-
-
-        item.quantity += change;
-
-
-        if (item.quantity <= 0) {
-
-            cart.delete(productId);
-
-        }
-
-
-        updateCartUI();
-
-    }
-
-
-    function updateCartUI() {
-
-        let totalItems = 0;
-
-        let subtotal = 0;
-
-
-        cart.forEach(item => {
-
-            totalItems +=
-                item.quantity;
-
-            subtotal +=
-                item.product.price *
-                item.quantity;
-
-        });
-
-
         setText(
-            "cartCount",
-            totalItems
+            "configAdaptiveMode",
+            config.mode ||
+            config.tier ||
+            "UNKNOWN"
         );
 
 
         setText(
-            "cartSubtotal",
-            formatPrice(subtotal)
+            "configAdaptiveDescription",
+            config.description ||
+            "Adaptive delivery active."
         );
 
 
-        renderCart();
-
-    }
-
-
-    function renderCart() {
-
-        const container =
-            document.getElementById(
-                "cartItemsList"
-            );
-
-
-        if (!container) return;
-
-
-        if (!cart.size) {
-
-            container.innerHTML = `
-
-                <div class="cart-empty-state">
-
-                    <span class="empty-icon">
-                        🛒
-                    </span>
-
-                    <h3>
-                        Your cart is empty
-                    </h3>
-
-                    <p>
-                        Add products to start shopping.
-                    </p>
-
-                </div>
-
-            `;
-
-            return;
-
-        }
-
-
-        container.innerHTML = "";
-
-
-        cart.forEach(
-            ({ product, quantity }) => {
-
-                const row =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                row.className =
-                    "cart-item-row";
-
-
-                row.innerHTML = `
-
-                    <img
-                        src="${escapeHTML(product.image)}"
-                        alt="${escapeHTML(product.name)}"
-                    >
-
-                    <div class="cart-item-details">
-
-                        <strong>
-                            ${escapeHTML(product.name)}
-                        </strong>
-
-                        <span class="cart-item-price">
-                            ${formatPrice(product.price)}
-                        </span>
-
-                        <div class="cart-qty-controls">
-
-                            <button
-                                onclick="window.AdaptiveShop.updateCartQuantity(${product.id}, -1)"
-                            >
-                                −
-                            </button>
-
-                            <span>
-                                ${quantity}
-                            </span>
-
-                            <button
-                                onclick="window.AdaptiveShop.updateCartQuantity(${product.id}, 1)"
-                            >
-                                +
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                    <button
-                        class="cart-remove-btn"
-                        onclick="window.AdaptiveShop.removeFromCart(${product.id})"
-                    >
-                        ✕
-                    </button>
-
-                `;
-
-
-                container.appendChild(row);
-
-            }
+        setText(
+            "configTier",
+            `${config.tier || "—"} TIER`
         );
 
-    }
+
+        setText(
+            "configNetworkLevel",
+            network.level || "—"
+        );
 
 
-    function openCartDrawer() {
-
-        const overlay =
-            document.getElementById(
-                "cartDrawerOverlay"
-            );
+        setText(
+            "configNetworkType",
+            network.effectiveType || "—"
+        );
 
 
-        overlay?.classList.add(
-            "active"
+        setText(
+            "configBrowserSpeed",
+
+            network.browserEstimate != null
+                ? `${network.browserEstimate} Mbps`
+                : "Unavailable"
+
+        );
+
+
+        setText(
+            "configMeasuredSpeed",
+
+            network.measuredBandwidth != null
+                ? `${network.measuredBandwidth} Mbps`
+                : "Unavailable"
+
+        );
+
+
+        setText(
+            "configDeviceLevel",
+            device.level || "—"
+        );
+
+
+        setText(
+            "configCPU",
+
+            device.cores
+                ? `${device.cores} Cores`
+                : "—"
+
+        );
+
+
+        setText(
+            "configMemory",
+
+            device.memory != null
+                ? `${device.memory} GB`
+                : "Unavailable"
+
+        );
+
+
+        setText(
+            "configPlatform",
+            device.platform || "—"
+        );
+
+
+        setText(
+            "configImage",
+
+            config.imageWidth
+                ? `${config.imageWidth}px / q${config.imageQuality}`
+                : "—"
+
+        );
+
+
+        setText(
+            "configJS",
+            config.jsStrategy || "—"
+        );
+
+
+        setText(
+            "configAnimations",
+            config.animations || "—"
+        );
+
+
+        setText(
+            "configPrefetch",
+            config.prefetch || "—"
+        );
+
+
+        setText(
+            "configRecommendations",
+            config.recommendations || "—"
+        );
+
+
+        setText(
+            "configBackend",
+
+            isBackendAvailable
+                ? "Online • Live API"
+                : "Fallback • Local"
+
         );
 
     }
 
 
-    function closeCartDrawer() {
+    function openConfig() {
 
-        const overlay =
-            document.getElementById(
-                "cartDrawerOverlay"
-            );
-
-
-        overlay?.classList.remove(
-            "active"
-        );
-
-    }
-
-
-    /* =====================================================
-       CHECKOUT
-       ===================================================== */
-
-    async function handleCheckout() {
-
-        if (!cart.size) {
-
-            showToast(
-                "Your cart is empty"
-            );
-
-            return;
-
-        }
-
-
-        const items = [];
-
-        let total = 0;
-
-
-        cart.forEach(
-            ({ product, quantity }) => {
-
-                items.push({
-
-                    productId:
-                        product.id,
-
-                    quantity:
-                        quantity,
-
-                    unitPrice:
-                        product.price
-
-                });
-
-
-                total +=
-                    product.price *
-                    quantity;
-
-            }
-        );
-
-
-        if (isBackendAvailable) {
-
-            try {
-
-                await fetch(
-                    `${API_BASE_URL}/orders`,
-                    {
-
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify({
-
-                                customerName:
-                                    "Hackathon Demo User",
-
-                                customerEmail:
-                                    "demo@adaptiveshop.io",
-
-                                items
-
-                            })
-
-                    }
-                );
-
-            } catch {
-
-                // graceful fallback
-
-            }
-
-        }
-
-
-        cart.clear();
-
-        updateCartUI();
-
-        closeCartDrawer();
-
-
-        showToast(
-            `Order confirmed • ${formatPrice(total)}`
-        );
-
-    }
-
-
-    /* =====================================================
-       PRODUCT MODAL
-       ===================================================== */
-
-    function openProductModal(productId) {
-
-        const product =
-            currentProducts.find(
-                item =>
-                    String(item.id) ===
-                    String(productId)
-            );
-
-
-        if (!product) return;
-
-
-        const overlay =
-            document.getElementById(
-                "productModalOverlay"
-            );
-
-
-        const content =
-            document.getElementById(
-                "productModalContent"
-            );
-
-
-        if (!overlay || !content) return;
-
-
-        const specs =
-            (product.specs || [])
-                .map(
-                    spec =>
-                        `<li>✓ ${escapeHTML(spec)}</li>`
-                )
-                .join("");
-
-
-        content.innerHTML = `
-
-            <div class="product-modal-image">
-
-                <img
-                    src="${escapeHTML(product.image)}"
-                    alt="${escapeHTML(product.name)}"
-                >
-
-            </div>
-
-
-            <div class="product-modal-info">
-
-                <span class="product-badge">
-                    ${escapeHTML(product.badge)}
-                </span>
-
-                <span class="product-category">
-                    ${escapeHTML(product.category)}
-                </span>
-
-                <h2>
-                    ${escapeHTML(product.name)}
-                </h2>
-
-                <div class="product-modal-rating">
-
-                    ★
-                    <b>${product.rating}</b>
-                    / 5.0
-
-                    ·
-
-                    ${product.reviewsCount}
-                    reviews
-
-                </div>
-
-                <p class="product-modal-desc">
-                    ${escapeHTML(product.description)}
-                </p>
-
-                <ul class="product-modal-specs">
-                    ${specs}
-                </ul>
-
-                <div class="product-modal-bottom">
-
-                    <strong class="product-modal-price">
-                        ${formatPrice(product.price)}
-                    </strong>
-
-                    <button
-                        class="hero-button"
-                        onclick="
-                            window.AdaptiveShop.addToCart(${product.id});
-                            window.AdaptiveShop.closeProductModal();
-                        "
-                    >
-                        Add to Cart
-                    </button>
-
-                </div>
-
-            </div>
-
-        `;
-
-
-        overlay.classList.add(
-            "active"
-        );
-
-    }
-
-
-    function closeProductModal() {
-
-        document
-            .getElementById(
-                "productModalOverlay"
-            )
-            ?.classList.remove(
-                "active"
-            );
-
-    }
-
-
-    /* =====================================================
-       CONFIG
-       ===================================================== */
-
-    function openConfigModal() {
+        updateUI();
 
         document
             .getElementById(
@@ -1588,7 +936,7 @@
     }
 
 
-    function closeConfigModal() {
+    function closeConfig() {
 
         document
             .getElementById(
@@ -1602,75 +950,7 @@
 
 
     /* =====================================================
-       TOAST
-       ===================================================== */
-
-    function showToast(message) {
-
-        const container =
-            document.getElementById(
-                "toastContainer"
-            );
-
-
-        if (!container) return;
-
-
-        const toast =
-            document.createElement(
-                "div"
-            );
-
-
-        toast.className =
-            "toast";
-
-
-        toast.textContent =
-            message;
-
-
-        container.appendChild(
-            toast
-        );
-
-
-        setTimeout(() => {
-
-            toast.style.opacity =
-                "0";
-
-            toast.style.transform =
-                "translateY(10px)";
-
-
-            setTimeout(
-                () => toast.remove(),
-                300
-            );
-
-        }, 2300);
-
-    }
-
-
-    /* =====================================================
-       SCROLL
-       ===================================================== */
-
-    function scrollToProducts() {
-
-        document
-            .getElementById("products")
-            ?.scrollIntoView({
-                behavior: "smooth"
-            });
-
-    }
-
-
-    /* =====================================================
-       TELEMETRY
+       PERFORMANCE CALLBACK
        ===================================================== */
 
     function updateTelemetryUI(
@@ -1764,36 +1044,755 @@
 
 
     /* =====================================================
-       TEXT HELPER
+       CATEGORY
        ===================================================== */
 
-    function setText(
-        id,
-        value
-    ) {
+    function filterCategory(category) {
 
-        const element =
-            document.getElementById(id);
+        activeCategory =
+            category;
 
 
-        if (element) {
+        document
+            .querySelectorAll(
+                ".category-card"
+            )
+            .forEach(
+                card => {
 
-            element.textContent =
-                value;
+                    card.classList.toggle(
+                        "active",
+                        card.dataset.cat ===
+                        category
+                    );
 
-        }
+                }
+            );
+
+
+        updateUI();
+
+        scrollToProducts();
 
     }
 
 
     /* =====================================================
-       EVENT LISTENERS
+       SEARCH
+       ===================================================== */
+
+    function handleSearch(event) {
+
+        searchQuery =
+            event.target.value;
+
+
+        const clear =
+            document.getElementById(
+                "clearSearchBtn"
+            );
+
+
+        if (clear) {
+
+            clear.style.display =
+                searchQuery
+                    ? "block"
+                    : "none";
+
+        }
+
+
+        updateUI();
+
+    }
+
+
+    function clearSearchFilter() {
+
+        const input =
+            document.getElementById(
+                "productSearchInput"
+            );
+
+
+        if (input) {
+            input.value = "";
+        }
+
+
+        searchQuery = "";
+
+        activeCategory = "ALL";
+
+
+        document
+            .querySelectorAll(
+                ".category-card"
+            )
+            .forEach(
+                card => {
+
+                    card.classList.toggle(
+                        "active",
+                        card.dataset.cat ===
+                        "ALL"
+                    );
+
+                }
+            );
+
+
+        const clear =
+            document.getElementById(
+                "clearSearchBtn"
+            );
+
+
+        if (clear) {
+            clear.style.display =
+                "none";
+        }
+
+
+        updateUI();
+
+    }
+
+
+    /* =====================================================
+       CART
+       ===================================================== */
+
+    function addToCart(productId) {
+
+        const product =
+            currentProducts.find(
+                item =>
+                    String(item.id) ===
+                    String(productId)
+            );
+
+
+        if (!product) return;
+
+
+        if (cart.has(productId)) {
+
+            cart.get(
+                productId
+            ).quantity++;
+
+        } else {
+
+            cart.set(
+                productId,
+                {
+                    product,
+                    quantity: 1
+                }
+            );
+
+        }
+
+
+        updateCart();
+
+        showToast(
+            `${product.name} added to cart`
+        );
+
+    }
+
+
+    function removeFromCart(productId) {
+
+        cart.delete(productId);
+
+        updateCart();
+
+    }
+
+
+    function updateCartQuantity(
+        productId,
+        change
+    ) {
+
+        const item =
+            cart.get(productId);
+
+
+        if (!item) return;
+
+
+        item.quantity +=
+            change;
+
+
+        if (
+            item.quantity <= 0
+        ) {
+
+            cart.delete(
+                productId
+            );
+
+        }
+
+
+        updateCart();
+
+    }
+
+
+    function updateCart() {
+
+        let count = 0;
+
+        let total = 0;
+
+
+        cart.forEach(
+            ({ product, quantity }) => {
+
+                count += quantity;
+
+                total +=
+                    product.price *
+                    quantity;
+
+            }
+        );
+
+
+        setText(
+            "cartCount",
+            count
+        );
+
+
+        setText(
+            "cartSubtotal",
+            formatPrice(total)
+        );
+
+
+        renderCart();
+
+    }
+
+
+    function renderCart() {
+
+        const container =
+            document.getElementById(
+                "cartItemsList"
+            );
+
+
+        if (!container) return;
+
+
+        if (!cart.size) {
+
+            container.innerHTML = `
+
+                <div class="cart-empty">
+
+                    <div style="font-size:45px">
+                        🛒
+                    </div>
+
+                    <h3>
+                        Your cart is empty
+                    </h3>
+
+                    <p>
+                        Add something you love.
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        container.innerHTML = "";
+
+
+        cart.forEach(
+            ({ product, quantity }) => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "cart-item-row";
+
+
+                row.innerHTML = `
+
+                    <img
+                        src="${escapeHTML(
+                            product.image
+                        )}"
+                        alt="${escapeHTML(
+                            product.name
+                        )}"
+                    >
+
+                    <div class="cart-item-details">
+
+                        <strong>
+                            ${escapeHTML(
+                                product.name
+                            )}
+                        </strong>
+
+                        <span class="cart-item-price">
+                            ${formatPrice(
+                                product.price
+                            )}
+                        </span>
+
+                        <div class="cart-qty-controls">
+
+                            <button
+                                onclick="
+                                    window.AdaptiveShop
+                                        .updateCartQuantity(
+                                            ${product.id},
+                                            -1
+                                        )
+                                "
+                            >
+                                −
+                            </button>
+
+                            <span>
+                                ${quantity}
+                            </span>
+
+                            <button
+                                onclick="
+                                    window.AdaptiveShop
+                                        .updateCartQuantity(
+                                            ${product.id},
+                                            1
+                                        )
+                                "
+                            >
+                                +
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <button
+                        class="cart-remove-btn"
+                        onclick="
+                            window.AdaptiveShop
+                                .removeFromCart(
+                                    ${product.id}
+                                )
+                        "
+                    >
+                        ✕
+                    </button>
+
+                `;
+
+
+                container.appendChild(row);
+
+            }
+        );
+
+    }
+
+
+    function openCart() {
+
+        document
+            .getElementById(
+                "cartDrawerOverlay"
+            )
+            ?.classList.add(
+                "active"
+            );
+
+    }
+
+
+    function closeCart() {
+
+        document
+            .getElementById(
+                "cartDrawerOverlay"
+            )
+            ?.classList.remove(
+                "active"
+            );
+
+    }
+
+
+    /* =====================================================
+       CHECKOUT
+       ===================================================== */
+
+    async function checkout() {
+
+        if (!cart.size) {
+
+            showToast(
+                "Your cart is empty"
+            );
+
+            return;
+
+        }
+
+
+        const items = [];
+
+        let total = 0;
+
+
+        cart.forEach(
+            ({ product, quantity }) => {
+
+                items.push({
+
+                    productId:
+                        product.id,
+
+                    quantity,
+
+                    unitPrice:
+                        product.price
+
+                });
+
+
+                total +=
+                    product.price *
+                    quantity;
+
+            }
+        );
+
+
+        if (isBackendAvailable) {
+
+            try {
+
+                await fetch(
+                    `${API_BASE_URL}/orders`,
+                    {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+
+                                customerName:
+                                    "Hackathon Demo User",
+
+                                customerEmail:
+                                    "demo@adaptiveshop.io",
+
+                                items
+
+                            })
+
+                    }
+                );
+
+            } catch {
+
+                // graceful fallback
+
+            }
+
+        }
+
+
+        cart.clear();
+
+        updateCart();
+
+        closeCart();
+
+
+        showToast(
+            `Order confirmed • ${formatPrice(total)}`
+        );
+
+    }
+
+
+    /* =====================================================
+       PRODUCT MODAL
+       ===================================================== */
+
+    function openProductModal(
+        productId
+    ) {
+
+        const product =
+            currentProducts.find(
+                item =>
+                    String(item.id) ===
+                    String(productId)
+            );
+
+
+        if (!product) return;
+
+
+        const overlay =
+            document.getElementById(
+                "productModalOverlay"
+            );
+
+
+        const content =
+            document.getElementById(
+                "productModalContent"
+            );
+
+
+        if (!overlay || !content) return;
+
+
+        const specs =
+            (product.specs || [])
+                .map(
+                    spec =>
+                        `<li>✓ ${escapeHTML(
+                            spec
+                        )}</li>`
+                )
+                .join("");
+
+
+        content.innerHTML = `
+
+            <div class="product-modal-image">
+
+                <img
+                    src="${escapeHTML(
+                        product.image
+                    )}"
+                    alt="${escapeHTML(
+                        product.name
+                    )}"
+                >
+
+            </div>
+
+
+            <div class="product-modal-info">
+
+                <span class="product-badge">
+                    ${escapeHTML(
+                        product.badge
+                    )}
+                </span>
+
+                <span class="product-category">
+                    ${escapeHTML(
+                        product.category
+                    )}
+                </span>
+
+                <h2>
+                    ${escapeHTML(
+                        product.name
+                    )}
+                </h2>
+
+                <div class="product-modal-rating">
+
+                    ★
+                    <b>
+                        ${product.rating}
+                    </b>
+
+                    / 5
+
+                    ·
+
+                    ${product.reviewsCount}
+                    reviews
+
+                </div>
+
+                <p class="product-modal-desc">
+                    ${escapeHTML(
+                        product.description
+                    )}
+                </p>
+
+                <ul class="product-modal-specs">
+                    ${specs}
+                </ul>
+
+                <div class="product-modal-bottom">
+
+                    <strong class="product-modal-price">
+                        ${formatPrice(
+                            product.price
+                        )}
+                    </strong>
+
+                    <button
+                        class="primary-button"
+                        onclick="
+                            window.AdaptiveShop
+                                .addToCart(
+                                    ${product.id}
+                                );
+
+                            window.AdaptiveShop
+                                .closeProductModal();
+                        "
+                    >
+                        Add to Cart
+                    </button>
+
+                </div>
+
+            </div>
+
+        `;
+
+
+        overlay.classList.add(
+            "active"
+        );
+
+    }
+
+
+    function closeProductModal() {
+
+        document
+            .getElementById(
+                "productModalOverlay"
+            )
+            ?.classList.remove(
+                "active"
+            );
+
+    }
+
+
+    /* =====================================================
+       TOAST
+       ===================================================== */
+
+    function showToast(message) {
+
+        const container =
+            document.getElementById(
+                "toastContainer"
+            );
+
+
+        if (!container) return;
+
+
+        const toast =
+            document.createElement(
+                "div"
+            );
+
+
+        toast.className =
+            "toast";
+
+
+        toast.textContent =
+            message;
+
+
+        container.appendChild(
+            toast
+        );
+
+
+        setTimeout(
+            () => {
+
+                toast.style.opacity =
+                    "0";
+
+                toast.style.transform =
+                    "translateY(10px)";
+
+                setTimeout(
+                    () => toast.remove(),
+                    300
+                );
+
+            },
+            2200
+        );
+
+    }
+
+
+    /* =====================================================
+       SCROLL
+       ===================================================== */
+
+    function scrollToProducts() {
+
+        document
+            .getElementById(
+                "products"
+            )
+            ?.scrollIntoView({
+                behavior: "smooth"
+            });
+
+    }
+
+
+    function scrollToCategories() {
+
+        document
+            .getElementById(
+                "categories"
+            )
+            ?.scrollIntoView({
+                behavior: "smooth"
+            });
+
+    }
+
+
+    /* =====================================================
+       EVENTS
        ===================================================== */
 
     function init() {
 
-
-        /* Search */
 
         document
             .getElementById(
@@ -1815,15 +1814,13 @@
             );
 
 
-        /* Cart */
-
         document
             .getElementById(
                 "cartButton"
             )
             ?.addEventListener(
                 "click",
-                openCartDrawer
+                openCart
             );
 
 
@@ -1833,7 +1830,17 @@
             )
             ?.addEventListener(
                 "click",
-                closeCartDrawer
+                closeCart
+            );
+
+
+        document
+            .getElementById(
+                "checkoutButton"
+            )
+            ?.addEventListener(
+                "click",
+                checkout
             );
 
 
@@ -1850,7 +1857,7 @@
                         "cartDrawerOverlay"
                     ) {
 
-                        closeCartDrawer();
+                        closeCart();
 
                     }
 
@@ -1860,15 +1867,44 @@
 
         document
             .getElementById(
-                "checkoutButton"
+                "configButton"
             )
             ?.addEventListener(
                 "click",
-                handleCheckout
+                openConfig
             );
 
 
-        /* Product Modal */
+        document
+            .getElementById(
+                "closeConfig"
+            )
+            ?.addEventListener(
+                "click",
+                closeConfig
+            );
+
+
+        document
+            .getElementById(
+                "configOverlay"
+            )
+            ?.addEventListener(
+                "click",
+                event => {
+
+                    if (
+                        event.target.id ===
+                        "configOverlay"
+                    ) {
+
+                        closeConfig();
+
+                    }
+
+                }
+            );
+
 
         document
             .getElementById(
@@ -1901,51 +1937,6 @@
             );
 
 
-        /* Config */
-
-        document
-            .getElementById(
-                "configButton"
-            )
-            ?.addEventListener(
-                "click",
-                openConfigModal
-            );
-
-
-        document
-            .getElementById(
-                "closeConfig"
-            )
-            ?.addEventListener(
-                "click",
-                closeConfigModal
-            );
-
-
-        document
-            .getElementById(
-                "configOverlay"
-            )
-            ?.addEventListener(
-                "click",
-                event => {
-
-                    if (
-                        event.target.id ===
-                        "configOverlay"
-                    ) {
-
-                        closeConfigModal();
-
-                    }
-
-                }
-            );
-
-
-        /* Escape */
-
         document.addEventListener(
             "keydown",
             event => {
@@ -1955,9 +1946,11 @@
                     "Escape"
                 ) {
 
-                    closeCartDrawer();
+                    closeConfig();
+
+                    closeCart();
+
                     closeProductModal();
-                    closeConfigModal();
 
                 }
 
@@ -1965,55 +1958,13 @@
         );
 
 
-        /* Network changes */
-
-        window.addEventListener(
-            "online",
-            () => {
-
-                updateUI();
-
-                showToast(
-                    "Network connection restored"
-                );
-
-            }
-        );
-
-
-        window.addEventListener(
-            "offline",
-            () => {
-
-                updateUI();
-
-                showToast(
-                    "Offline mode detected"
-                );
-
-            }
-        );
-
-
-        const connection =
-            navigator.connection ||
-            navigator.mozConnection ||
-            navigator.webkitConnection;
-
-
-        connection?.addEventListener(
-            "change",
-            updateUI
-        );
-
-
-        /* Adaptive Engine telemetry */
+        /* Keep adaptive engine monitoring */
 
         if (
             window.AdaptiveEngine &&
             typeof window.AdaptiveEngine
                 .initPerformanceMonitoring ===
-                "function"
+            "function"
         ) {
 
             window.AdaptiveEngine
@@ -2023,8 +1974,6 @@
 
         }
 
-
-        /* Initial */
 
         updateUI();
 
@@ -2045,23 +1994,25 @@
 
         updateCartQuantity,
 
-        openCartDrawer,
+        openCart,
 
-        closeCartDrawer,
+        closeCart,
 
         openProductModal,
 
         closeProductModal,
 
-        openConfigModal,
+        openConfig,
 
-        closeConfigModal,
+        closeConfig,
 
         filterCategory,
 
         clearSearchFilter,
 
-        scrollToProducts
+        scrollToProducts,
+
+        scrollToCategories
 
     };
 
@@ -2085,5 +2036,6 @@
         init();
 
     }
+
 
 })();
