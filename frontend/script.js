@@ -2301,6 +2301,26 @@ function showToast(message) {
 /* ============================================================
    PERFORMANCE TELEMETRY
 ============================================================ */
+function logPerformanceToConsole() {
+
+    const performanceData = {
+        LCP: $("metricLCP")?.textContent || "Measuring...",
+        CLS: $("metricCLS")?.textContent || "Measuring...",
+        INP: $("metricINP")?.textContent || "Waiting...",
+        "Page Load": $("metricLoad")?.textContent || "Measuring...",
+        Transferred: $("metricTransfer")?.textContent || "Measuring...",
+        Resources: $("metricResources")?.textContent || "—"
+    };
+
+    console.clear();
+
+    console.log(
+        "%c[AdaptiveWeb Performance]",
+        "font-weight:bold;font-size:14px;"
+    );
+
+    console.table(performanceData);
+}
 
 function setupPerformanceTelemetry() {
 
@@ -2565,6 +2585,17 @@ function setupPerformanceTelemetry() {
             );
 
         }
+    );
+window.addEventListener(
+        "load",
+        () => {
+            // existing code...
+        }
+    );
+
+    setInterval(
+        logPerformanceToConsole,
+        1000
     );
 
 }
