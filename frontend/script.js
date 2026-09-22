@@ -1,18 +1,18 @@
 "use strict";
 
 
-/* =====================================================
-   BACKEND
-===================================================== */
+/* ============================================================
+   CONFIG
+============================================================ */
 
 const API_BASE_URL =
     window.API_BASE_URL ||
     "https://adaptiveweb.onrender.com/api";
 
 
-/* =====================================================
+/* ============================================================
    STATE
-===================================================== */
+============================================================ */
 
 let products = [];
 
@@ -30,11 +30,15 @@ let detectedNetwork = "MEDIUM";
 
 let detectedDevice = "MEDIUM";
 
+let currentMode = "MEDIUM";
+
+let currentConfig = null;
 
 
-/* =====================================================
+
+/* ============================================================
    FALLBACK PRODUCTS
-===================================================== */
+============================================================ */
 
 const fallbackProducts = [
 
@@ -49,13 +53,7 @@ const fallbackProducts = [
         description:
             "Premium smartphone with OLED display and advanced camera system.",
         image:
-            "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=900&q=85",
-        specs: [
-            "6.8 inch OLED",
-            "Snapdragon processor",
-            "5000mAh battery",
-            "5G connectivity"
-        ]
+            "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1000&q=85"
     },
 
     {
@@ -69,13 +67,7 @@ const fallbackProducts = [
         description:
             "High-performance laptop for creators, developers and professionals.",
         image:
-            "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=900&q=85",
-        specs: [
-            "16 inch display",
-            "16-Core CPU",
-            "32GB RAM",
-            "1TB NVMe"
-        ]
+            "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1000&q=85"
     },
 
     {
@@ -89,13 +81,7 @@ const fallbackProducts = [
         description:
             "Premium wireless headphones with active noise cancellation.",
         image:
-            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=85",
-        specs: [
-            "Adaptive ANC",
-            "Hi-Res Audio",
-            "Bluetooth 5.4",
-            "48-hour battery"
-        ]
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=85"
     },
 
     {
@@ -109,13 +95,7 @@ const fallbackProducts = [
         description:
             "Premium smartwatch with GPS and health tracking.",
         image:
-            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=85",
-        specs: [
-            "Titanium body",
-            "OLED display",
-            "GPS",
-            "Health tracking"
-        ]
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=85"
     },
 
     {
@@ -129,13 +109,7 @@ const fallbackProducts = [
         description:
             "Professional tablet for entertainment and productivity.",
         image:
-            "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=900&q=85",
-        specs: [
-            "12.9 inch display",
-            "Octa-core processor",
-            "Stylus support",
-            "Quad speakers"
-        ]
+            "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=1000&q=85"
     },
 
     {
@@ -149,13 +123,7 @@ const fallbackProducts = [
         description:
             "Premium mechanical keyboard with hot-swappable switches.",
         image:
-            "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=900&q=85",
-        specs: [
-            "Mechanical switches",
-            "RGB lighting",
-            "Wireless",
-            "Hot-swappable"
-        ]
+            "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=1000&q=85"
     },
 
     {
@@ -169,13 +137,7 @@ const fallbackProducts = [
         description:
             "4K gaming display with high refresh rate and HDR support.",
         image:
-            "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=900&q=85",
-        specs: [
-            "4K resolution",
-            "144Hz refresh rate",
-            "HDR",
-            "Adaptive sync"
-        ]
+            "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=1000&q=85"
     },
 
     {
@@ -189,22 +151,51 @@ const fallbackProducts = [
         description:
             "Immersive wireless speaker with spatial audio.",
         image:
-            "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=900&q=85",
-        specs: [
-            "360° sound",
-            "Spatial audio",
-            "Wi-Fi",
-            "Smart controls"
-        ]
+            "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=1000&q=85"
+    },
+
+    {
+        id: 9,
+        name: "Alpha Mirrorless Camera",
+        category: "ACCESSORIES",
+        price: 189999,
+        rating: 5.0,
+        reviews: 88,
+        badge: "8K CAMERA",
+        description:
+            "Professional mirrorless camera with high-resolution sensor.",
+        image:
+            "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=85"
+    },
+
+    {
+        id: 10,
+        name: "Aeroflex Wireless Mouse",
+        category: "ACCESSORIES",
+        price: 6999,
+        rating: 4.7,
+        reviews: 275,
+        badge: "ULTRALIGHT",
+        description:
+            "Lightweight wireless mouse designed for gaming and productivity.",
+        image:
+            "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=1000&q=85"
     }
 
 ];
 
 
 
-/* =====================================================
-   UTILS
-===================================================== */
+/* ============================================================
+   HELPER
+============================================================ */
+
+function $(id) {
+
+    return document.getElementById(id);
+
+}
+
 
 function money(value) {
 
@@ -227,31 +218,24 @@ function escapeHTML(value) {
 }
 
 
-function get(id) {
 
-    return document.getElementById(id);
-
-}
-
-
-
-/* =====================================================
+/* ============================================================
    NETWORK DETECTION
-===================================================== */
+============================================================ */
 
 function detectNetwork() {
-
-    const connection =
-        navigator.connection ||
-        navigator.mozConnection ||
-        navigator.webkitConnection;
-
 
     if (!navigator.onLine) {
 
         return "LOW";
 
     }
+
+
+    const connection =
+        navigator.connection ||
+        navigator.mozConnection ||
+        navigator.webkitConnection;
 
 
     if (!connection) {
@@ -262,17 +246,22 @@ function detectNetwork() {
 
 
     const type =
-        connection.effectiveType;
+        connection.effectiveType || "";
 
 
     const downlink =
         Number(connection.downlink || 0);
 
 
+    const rtt =
+        Number(connection.rtt || 0);
+
+
     if (
         type === "slow-2g" ||
         type === "2g" ||
-        downlink < 1.5
+        downlink < 1.5 ||
+        rtt >= 400
     ) {
 
         return "LOW";
@@ -281,8 +270,8 @@ function detectNetwork() {
 
 
     if (
-        type === "4g" &&
-        downlink >= 5
+        downlink >= 5 &&
+        rtt < 150
     ) {
 
         return "HIGH";
@@ -296,9 +285,9 @@ function detectNetwork() {
 
 
 
-/* =====================================================
+/* ============================================================
    DEVICE DETECTION
-===================================================== */
+============================================================ */
 
 function detectDevice() {
 
@@ -336,11 +325,288 @@ function detectDevice() {
 
 
 
-/* =====================================================
-   DETECT CURRENT ENVIRONMENT
-===================================================== */
+/* ============================================================
+   ADAPTIVE DECISION
+============================================================ */
 
-function refreshDetection() {
+function calculateAdaptiveMode(
+    network,
+    device
+) {
+
+    /*
+       Weakest-link rule
+    */
+
+    if (
+        network === "LOW" ||
+        device === "LOW"
+    ) {
+
+        return "LOW";
+
+    }
+
+
+    if (
+        network === "HIGH" &&
+        device === "HIGH"
+    ) {
+
+        return "HIGH";
+
+    }
+
+
+    return "MEDIUM";
+
+}
+
+
+
+/* ============================================================
+   MODE CONFIG
+============================================================ */
+
+function getModeConfig(mode) {
+
+    if (mode === "HIGH") {
+
+        return {
+
+            title:
+                "FULL EXPERIENCE",
+
+            imageWidth:
+                1000,
+
+            imageQuality:
+                85,
+
+            javascript:
+                "FULL",
+
+            animations:
+                "FULL",
+
+            prefetch:
+                "ON",
+
+            recommendations:
+                true,
+
+            description:
+                "High-capability experience enabled with rich animations, enhanced hover effects, high-quality images and prefetching."
+
+        };
+
+    }
+
+
+    if (mode === "LOW") {
+
+        return {
+
+            title:
+                "LIGHTWEIGHT",
+
+            imageWidth:
+                320,
+
+            imageQuality:
+                40,
+
+            javascript:
+                "ESSENTIAL",
+
+            animations:
+                "MINIMAL",
+
+            prefetch:
+                "OFF",
+
+            recommendations:
+                false,
+
+            description:
+                "Lightweight experience enabled. Heavy animations and unnecessary effects are removed to reduce processing cost."
+
+        };
+
+    }
+
+
+    return {
+
+        title:
+            "BALANCED",
+
+        imageWidth:
+            600,
+
+        imageQuality:
+            65,
+
+        javascript:
+            "BALANCED",
+
+        animations:
+            "REDUCED",
+
+        prefetch:
+            "OFF",
+
+        recommendations:
+            true,
+
+        description:
+            "Balanced experience with moderate image quality and restrained animations."
+
+    };
+
+}
+
+
+
+/* ============================================================
+   APPLY VISUAL MODE
+============================================================ */
+
+function applyVisualMode(mode) {
+
+    document.body.classList.remove(
+        "high-mode",
+        "medium-mode",
+        "low-mode"
+    );
+
+
+    document.body.classList.add(
+        `${mode.toLowerCase()}-mode`
+    );
+
+
+    document.body.dataset.adaptiveMode =
+        mode;
+
+
+    currentMode =
+        mode;
+
+}
+
+
+
+/* ============================================================
+   IMAGE ADAPTATION
+============================================================ */
+
+function getAdaptiveImageURL(
+    original,
+    config
+) {
+
+    try {
+
+        const url =
+            new URL(original);
+
+
+        url.searchParams.set(
+            "w",
+            config.imageWidth
+        );
+
+
+        url.searchParams.set(
+            "q",
+            config.imageQuality
+        );
+
+
+        return url.toString();
+
+    }
+    catch {
+
+        return original;
+
+    }
+
+}
+
+
+
+/* ============================================================
+   PREFETCH
+============================================================ */
+
+function applyPrefetch(config) {
+
+    document
+        .querySelectorAll(
+            "link[data-adaptive-prefetch]"
+        )
+        .forEach(
+            element =>
+                element.remove()
+        );
+
+
+    if (
+        config.prefetch !== "ON"
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        products.length < 2
+    ) {
+
+        return;
+
+    }
+
+
+    const link =
+        document.createElement("link");
+
+
+    link.rel =
+        "prefetch";
+
+
+    link.as =
+        "image";
+
+
+    link.href =
+        getAdaptiveImageURL(
+            products[1].image,
+            config
+        );
+
+
+    link.dataset.adaptivePrefetch =
+        "true";
+
+
+    document.head.appendChild(
+        link
+    );
+
+}
+
+
+
+/* ============================================================
+   ADAPTIVE ENGINE
+============================================================ */
+
+function updateAdaptiveEngine() {
 
     detectedNetwork =
         detectNetwork();
@@ -350,196 +616,55 @@ function refreshDetection() {
         detectDevice();
 
 
-    get("detectedNetwork").textContent =
-        `Detected: ${detectedNetwork}`;
-
-
-    get("detectedDevice").textContent =
-        `Detected: ${detectedDevice}`;
-
-}
-
-
-
-/* =====================================================
-   FINAL ADAPTIVE MODE
-===================================================== */
-
-function getFinalLevels() {
-
-    const network =
+    const effectiveNetwork =
         networkSetting === "AUTO"
             ? detectedNetwork
             : networkSetting;
 
 
-    const device =
+    const effectiveDevice =
         deviceSetting === "AUTO"
             ? detectedDevice
             : deviceSetting;
 
 
-    return {
-        network,
-        device
-    };
-
-}
-
-
-
-/* =====================================================
-   DELIVERY DECISION
-===================================================== */
-
-function getDeliveryConfig() {
-
-    const levels =
-        getFinalLevels();
-
-
-    let mode = "BALANCED";
-
-
-    if (
-        levels.network === "LOW" ||
-        levels.device === "LOW"
-    ) {
-
-        mode = "LIGHTWEIGHT";
-
-    }
-    else if (
-        levels.network === "HIGH" &&
-        levels.device === "HIGH"
-    ) {
-
-        mode = "FULL EXPERIENCE";
-
-    }
-
-
-    if (mode === "LIGHTWEIGHT") {
-
-        return {
-
-            ...levels,
-
-            mode,
-
-            image: "320px / 40%",
-
-            js: "Essential",
-
-            animations: "Reduced",
-
-            prefetch: "OFF",
-
-            description:
-                "Lightweight delivery enabled. Data and processing are minimized."
-
-        };
-
-    }
-
-
-    if (mode === "FULL EXPERIENCE") {
-
-        return {
-
-            ...levels,
-
-            mode,
-
-            image: "1000px / 85%",
-
-            js: "Full",
-
-            animations: "Full",
-
-            prefetch: "ON",
-
-            description:
-                "Full experience enabled for a strong network and capable device."
-
-        };
-
-    }
-
-
-    return {
-
-        ...levels,
-
-        mode,
-
-        image: "600px / 65%",
-
-        js: "Balanced",
-
-        animations: "Reduced",
-
-        prefetch: "OFF",
-
-        description:
-            "Balanced delivery selected for the current environment."
-
-    };
-
-}
-
-
-
-/* =====================================================
-   CONFIG UI
-===================================================== */
-
-function updateConfigUI() {
-
-    refreshDetection();
+    const mode =
+        calculateAdaptiveMode(
+            effectiveNetwork,
+            effectiveDevice
+        );
 
 
     const config =
-        getDeliveryConfig();
+        getModeConfig(mode);
 
 
-    get("deliveryMode").textContent =
-        config.mode;
+    currentConfig =
+        config;
 
 
-    get("deliveryDescription").textContent =
-        config.description;
+    /*
+       DETECT
+       ↓
+       DECIDE
+       ↓
+       ADAPT
+    */
+
+    applyVisualMode(mode);
 
 
-    get("deliveryBadge").textContent =
-        `${config.network} / ${config.device}`;
+    updateAdaptiveUI(
+        effectiveNetwork,
+        effectiveDevice,
+        config
+    );
 
 
-    get("detailImages").textContent =
-        config.image;
+    applyPrefetch(config);
 
 
-    get("detailJS").textContent =
-        config.js;
-
-
-    get("detailAnimations").textContent =
-        config.animations;
-
-
-    get("detailPrefetch").textContent =
-        config.prefetch;
-
-
-    get("detailNetwork").textContent =
-        config.network;
-
-
-    get("detailDevice").textContent =
-        config.device;
-
-
-    applyAdaptiveImageStrategy(
+    updateProductText(
         config
     );
 
@@ -547,170 +672,460 @@ function updateConfigUI() {
 
 
 
-/* =====================================================
-   OPTION BUTTONS
-===================================================== */
+/* ============================================================
+   ADAPTIVE UI
+============================================================ */
 
-function setupOptions() {
-
-
-    document
-        .querySelectorAll(
-            ".network-option"
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    networkSetting =
-                        button.dataset.value;
-
-
-                    document
-                        .querySelectorAll(
-                            ".network-option"
-                        )
-                        .forEach(
-                            item =>
-                                item.classList.remove(
-                                    "active"
-                                )
-                        );
-
-
-                    button.classList.add(
-                        "active"
-                    );
-
-
-                    updateConfigUI();
-
-                }
-            );
-
-        });
-
-
-
-    document
-        .querySelectorAll(
-            ".device-option"
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    deviceSetting =
-                        button.dataset.value;
-
-
-                    document
-                        .querySelectorAll(
-                            ".device-option"
-                        )
-                        .forEach(
-                            item =>
-                                item.classList.remove(
-                                    "active"
-                                )
-                        );
-
-
-                    button.classList.add(
-                        "active"
-                    );
-
-
-                    updateConfigUI();
-
-                }
-            );
-
-        });
-
-}
-
-
-
-/* =====================================================
-   ADAPTIVE IMAGE STRATEGY
-===================================================== */
-
-function applyAdaptiveImageStrategy(
+function updateAdaptiveUI(
+    network,
+    device,
     config
 ) {
 
-    const imageWidth =
-        config.mode === "LIGHTWEIGHT"
-            ? 320
-            : config.mode === "FULL EXPERIENCE"
-                ? 900
-                : 600;
+    if ($("detectedNetwork")) {
+
+        $("detectedNetwork").textContent =
+            `Detected: ${detectedNetwork}`;
+
+    }
 
 
-    const quality =
-        config.mode === "LIGHTWEIGHT"
-            ? 40
-            : config.mode === "FULL EXPERIENCE"
-                ? 85
-                : 65;
+    if ($("detectedDevice")) {
+
+        $("detectedDevice").textContent =
+            `Detected: ${detectedDevice}`;
+
+    }
 
 
-    document
-        .querySelectorAll(
-            ".product-image img"
-        )
-        .forEach(img => {
+    if ($("deliveryBadge")) {
 
-            const original =
-                img.dataset.original ||
-                img.src;
+        $("deliveryBadge").textContent =
+            `${network} / ${device}`;
+
+    }
 
 
-            img.dataset.original =
-                original;
+    if ($("deliveryMode")) {
+
+        $("deliveryMode").textContent =
+            config.title;
+
+    }
 
 
-            try {
+    if ($("deliveryDescription")) {
 
-                const url =
-                    new URL(original);
+        $("deliveryDescription").textContent =
+            config.description;
 
-
-                url.searchParams.set(
-                    "w",
-                    imageWidth
-                );
+    }
 
 
-                url.searchParams.set(
-                    "q",
-                    quality
-                );
+    if ($("detailImages")) {
+
+        $("detailImages").textContent =
+            `${config.imageWidth}px / q${config.imageQuality}`;
+
+    }
 
 
-                img.src =
-                    url.toString();
+    if ($("detailJS")) {
 
-            } catch {
+        $("detailJS").textContent =
+            config.javascript;
 
-                // Keep original URL.
+    }
 
-            }
 
-        });
+    if ($("detailAnimations")) {
+
+        $("detailAnimations").textContent =
+            config.animations;
+
+    }
+
+
+    if ($("detailPrefetch")) {
+
+        $("detailPrefetch").textContent =
+            config.prefetch;
+
+    }
+
+
+    if ($("detailNetwork")) {
+
+        $("detailNetwork").textContent =
+            network;
+
+    }
+
+
+    if ($("detailDevice")) {
+
+        $("detailDevice").textContent =
+            device;
+
+    }
+
+
+    if ($("shopStatus")) {
+
+        $("shopStatus").textContent =
+            `${network} Network · ${device} Device → ${config.title}`;
+
+    }
 
 }
 
 
 
-/* =====================================================
-   LOAD PRODUCTS FROM BACKEND
-===================================================== */
+/* ============================================================
+   PRODUCT RENDERING
+============================================================ */
+
+function renderProducts() {
+
+    const grid =
+        $("productGrid");
+
+
+    if (!grid) {
+
+        return;
+
+    }
+
+
+    let filtered =
+        [...products];
+
+
+    if (
+        activeCategory !== "ALL"
+    ) {
+
+        filtered =
+            filtered.filter(
+                product =>
+                    product.category ===
+                    activeCategory
+            );
+
+    }
+
+
+    if (
+        searchText.trim()
+    ) {
+
+        const query =
+            searchText
+                .trim()
+                .toLowerCase();
+
+
+        filtered =
+            filtered.filter(
+                product =>
+
+                    product.name
+                        .toLowerCase()
+                        .includes(query)
+
+                    ||
+
+                    product.category
+                        .toLowerCase()
+                        .includes(query)
+
+                    ||
+
+                    product.description
+                        .toLowerCase()
+                        .includes(query)
+            );
+
+    }
+
+
+    if (!filtered.length) {
+
+        grid.innerHTML =
+            "";
+
+
+        if ($("noResults")) {
+
+            $("noResults").style.display =
+                "block";
+
+        }
+
+
+        if ($("productCount")) {
+
+            $("productCount").textContent =
+                "0 products";
+
+        }
+
+
+        return;
+
+    }
+
+
+    if ($("noResults")) {
+
+        $("noResults").style.display =
+            "none";
+
+    }
+
+
+    if ($("productCount")) {
+
+        $("productCount").textContent =
+            `${filtered.length} products`;
+
+    }
+
+
+    grid.innerHTML =
+        filtered.map(
+            product => {
+
+                const image =
+                    getAdaptiveImageURL(
+                        product.image,
+                        currentConfig ||
+                        getModeConfig("MEDIUM")
+                    );
+
+
+                return `
+
+                <article
+                    class="product"
+                    data-id="${product.id}"
+                >
+
+                    <div
+                        class="product-image"
+                        data-product="${product.id}"
+                    >
+
+                        <span class="product-badge">
+                            ${escapeHTML(
+                                product.badge
+                            )}
+                        </span>
+
+                        <img
+                            src="${escapeHTML(image)}"
+                            alt="${escapeHTML(product.name)}"
+                            loading="lazy"
+                            decoding="async"
+                        >
+
+                    </div>
+
+
+                    <div class="product-info">
+
+                        <div class="product-top">
+
+                            <span class="product-category">
+                                ${escapeHTML(
+                                    product.category
+                                )}
+                            </span>
+
+                            <span class="product-rating">
+                                ★ ${product.rating}
+                            </span>
+
+                        </div>
+
+
+                        <h3>
+                            ${escapeHTML(
+                                product.name
+                            )}
+                        </h3>
+
+
+                        <p class="product-description">
+                            ${escapeHTML(
+                                product.description
+                            )}
+                        </p>
+
+
+                        <div class="product-bottom">
+
+                            <strong class="product-price">
+                                ${money(product.price)}
+                            </strong>
+
+
+                            <button
+                                class="add-cart"
+                                data-add="${product.id}"
+                            >
+                                Add to Cart
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+                `;
+
+            }
+        ).join("");
+
+
+    renderRecommendations();
+
+
+    updateProductText(
+        currentConfig
+    );
+
+}
+
+
+
+/* ============================================================
+   PRODUCT MODE TEXT
+============================================================ */
+
+function updateProductText(config) {
+
+    if (!$("productMode") || !config) {
+
+        return;
+
+    }
+
+
+    $("productMode").textContent =
+        `${config.title} · Images ${config.imageQuality}% · ${config.animations} animations`;
+
+}
+
+
+
+/* ============================================================
+   RECOMMENDATIONS
+============================================================ */
+
+function renderRecommendations() {
+
+    const container =
+        $("recommendationGrid");
+
+
+    const section =
+        $("recommendations");
+
+
+    if (!container || !section) {
+
+        return;
+
+    }
+
+
+    if (
+        !currentConfig ||
+        !currentConfig.recommendations
+    ) {
+
+        section.style.display =
+            "none";
+
+        container.innerHTML =
+            "";
+
+        return;
+
+    }
+
+
+    section.style.display =
+        "flex";
+
+
+    const count =
+        currentMode === "HIGH"
+            ? 3
+            : 1;
+
+
+    container.innerHTML =
+        products
+            .slice(0, count)
+            .map(
+                product => {
+
+                    const image =
+                        getAdaptiveImageURL(
+                            product.image,
+                            currentConfig
+                        );
+
+
+                    return `
+
+                    <div class="rec-card">
+
+                        <img
+                            src="${escapeHTML(image)}"
+                            alt="${escapeHTML(product.name)}"
+                        >
+
+                        <div class="rec-info">
+
+                            <strong>
+                                ${escapeHTML(
+                                    product.name
+                                )}
+                            </strong>
+
+                            <span>
+                                ${money(product.price)}
+                            </span>
+
+                        </div>
+
+                        <button
+                            class="rec-btn"
+                            data-rec-add="${product.id}"
+                        >
+                            +
+                        </button>
+
+                    </div>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
+
+/* ============================================================
+   LOAD BACKEND PRODUCTS
+============================================================ */
 
 async function loadProducts() {
 
@@ -741,7 +1156,11 @@ async function loadProducts() {
 
 
         if (!response.ok) {
-            throw new Error("Backend unavailable");
+
+            throw new Error(
+                "Backend unavailable"
+            );
+
         }
 
 
@@ -796,7 +1215,6 @@ async function loadProducts() {
                             reviews:
                                 Number(
                                     item.reviews ??
-                                    item.reviewCount ??
                                     fallback.reviews
                                 ),
 
@@ -811,23 +1229,12 @@ async function loadProducts() {
                             image:
                                 item.imageUrl ??
                                 item.image ??
-                                fallback.image,
-
-                            specs:
-                                Array.isArray(
-                                    item.specs
-                                )
-                                    ? item.specs
-                                    : fallback.specs
+                                fallback.image
 
                         };
 
                     }
                 );
-
-
-            get("backendStatus").textContent =
-                "Backend • Online";
 
         }
         else {
@@ -835,19 +1242,17 @@ async function loadProducts() {
             products =
                 [...fallbackProducts];
 
-            get("backendStatus").textContent =
-                "Backend • Fallback";
-
         }
 
     }
-    catch {
+    catch (error) {
+
+        console.warn(
+            "[AdaptiveShop] Using fallback catalog"
+        );
 
         products =
             [...fallbackProducts];
-
-        get("backendStatus").textContent =
-            "Backend • Fallback";
 
     }
 
@@ -858,202 +1263,11 @@ async function loadProducts() {
 
 
 
-/* =====================================================
-   FILTER PRODUCTS
-===================================================== */
-
-function getFilteredProducts() {
-
-    return products.filter(
-        product => {
-
-            const categoryMatch =
-                activeCategory === "ALL" ||
-                product.category ===
-                activeCategory;
-
-
-            const text =
-                searchText
-                    .trim()
-                    .toLowerCase();
-
-
-            const searchMatch =
-                !text ||
-
-                product.name
-                    .toLowerCase()
-                    .includes(text)
-
-                ||
-
-                product.category
-                    .toLowerCase()
-                    .includes(text)
-
-                ||
-
-                product.description
-                    .toLowerCase()
-                    .includes(text);
-
-
-            return (
-                categoryMatch &&
-                searchMatch
-            );
-
-        }
-    );
-
-}
-
-
-
-/* =====================================================
-   RENDER PRODUCTS
-===================================================== */
-
-function renderProducts() {
-
-    const grid =
-        get("productGrid");
-
-
-    const list =
-        getFilteredProducts();
-
-
-    get("productCount").textContent =
-        `${list.length} products`;
-
-
-    if (!list.length) {
-
-        grid.innerHTML = "";
-
-        get("noResults").style.display =
-            "block";
-
-        return;
-
-    }
-
-
-    get("noResults").style.display =
-        "none";
-
-
-    grid.innerHTML =
-        list.map(
-            product => `
-
-                <article
-                    class="product"
-                >
-
-                    <div
-                        class="product-image"
-                        data-id="${product.id}"
-                    >
-
-                        <span class="product-badge">
-                            ${escapeHTML(
-                                product.badge
-                            )}
-                        </span>
-
-                        <img
-                            src="${escapeHTML(
-                                product.image
-                            )}"
-                            alt="${escapeHTML(
-                                product.name
-                            )}"
-                            loading="lazy"
-                        >
-
-                    </div>
-
-
-                    <div class="product-info">
-
-                        <div class="product-top">
-
-                            <span class="product-category">
-                                ${escapeHTML(
-                                    product.category
-                                )}
-                            </span>
-
-                            <span class="product-rating">
-                                ★ ${product.rating}
-                            </span>
-
-                        </div>
-
-
-                        <h3
-                            data-product="${product.id}"
-                        >
-                            ${escapeHTML(
-                                product.name
-                            )}
-                        </h3>
-
-
-                        <p class="product-description">
-                            ${escapeHTML(
-                                product.description
-                            )}
-                        </p>
-
-
-                        <div class="product-bottom">
-
-                            <strong class="product-price">
-                                ${money(
-                                    product.price
-                                )}
-                            </strong>
-
-
-                            <button
-                                class="add-cart"
-                                data-add="${product.id}"
-                            >
-                                Add to Cart
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </article>
-
-            `
-        )
-        .join("");
-
-
-    applyAdaptiveImageStrategy(
-        getDeliveryConfig()
-    );
-
-}
-
-
-
-/* =====================================================
+/* ============================================================
    CATEGORY
-===================================================== */
+============================================================ */
 
-function setCategory(category) {
-
-    activeCategory =
-        category;
-
+function setupCategories() {
 
     document
         .querySelectorAll(
@@ -1062,267 +1276,346 @@ function setCategory(category) {
         .forEach(
             card => {
 
-                card.classList.toggle(
-                    "active",
-                    card.dataset.category ===
-                    category
+                card.addEventListener(
+                    "click",
+                    () => {
+
+                        activeCategory =
+                            card.dataset.category;
+
+
+                        document
+                            .querySelectorAll(
+                                ".category-card"
+                            )
+                            .forEach(
+                                item =>
+                                    item.classList.toggle(
+                                        "active",
+                                        item === card
+                                    )
+                            );
+
+
+                        renderProducts();
+
+                    }
                 );
 
             }
         );
 
-
-    renderProducts();
-
-
-    document
-        .getElementById(
-            "products"
-        )
-        .scrollIntoView({
-            behavior: "smooth"
-        });
-
 }
 
 
 
-/* =====================================================
-   CART
-===================================================== */
+/* ============================================================
+   SEARCH
+============================================================ */
 
-function addToCart(id) {
+function setupSearch() {
 
-    const product =
-        products.find(
-            item =>
-                String(item.id) ===
-                String(id)
-        );
+    const input =
+        $("searchInput");
 
 
-    if (!product) return;
-
-
-    const existing =
-        cart.find(
-            item =>
-                String(item.product.id) ===
-                String(id)
-        );
-
-
-    if (existing) {
-
-        existing.quantity++;
-
-    }
-    else {
-
-        cart.push({
-            product,
-            quantity: 1
-        });
-
-    }
-
-
-    renderCart();
-
-
-    toast(
-        `${product.name} added to cart`
-    );
-
-}
-
-
-
-function changeQuantity(
-    id,
-    change
-) {
-
-    const item =
-        cart.find(
-            entry =>
-                String(entry.product.id) ===
-                String(id)
-        );
-
-
-    if (!item) return;
-
-
-    item.quantity +=
-        change;
-
-
-    if (item.quantity <= 0) {
-
-        cart =
-            cart.filter(
-                entry =>
-                    String(entry.product.id) !==
-                    String(id)
-            );
-
-    }
-
-
-    renderCart();
-
-}
-
-
-
-function removeCart(id) {
-
-    cart =
-        cart.filter(
-            item =>
-                String(item.product.id) !==
-                String(id)
-        );
-
-
-    renderCart();
-
-}
-
-
-
-function renderCart() {
-
-    const container =
-        get("cartItems");
-
-
-    const count =
-        cart.reduce(
-            (sum, item) =>
-                sum + item.quantity,
-            0
-        );
-
-
-    const total =
-        cart.reduce(
-            (sum, item) =>
-                sum +
-                item.product.price *
-                item.quantity,
-            0
-        );
-
-
-    get("cartCount").textContent =
-        count;
-
-
-    get("cartTotal").textContent =
-        money(total);
-
-
-    if (!cart.length) {
-
-        container.innerHTML = `
-
-            <div class="cart-empty">
-
-                <div style="font-size:45px">
-                    🛒
-                </div>
-
-                <h3>
-                    Your cart is empty
-                </h3>
-
-                <p>
-                    Add something you love.
-                </p>
-
-            </div>
-
-        `;
+    if (!input) {
 
         return;
 
     }
 
 
-    container.innerHTML =
-        cart.map(
-            item => `
+    input.addEventListener(
+        "input",
+        event => {
 
-                <div class="cart-row">
-
-                    <img
-                        src="${escapeHTML(
-                            item.product.image
-                        )}"
-                        alt=""
-                    >
+            searchText =
+                event.target.value;
 
 
-                    <div class="cart-row-info">
+            renderProducts();
 
-                        <strong>
-                            ${escapeHTML(
-                                item.product.name
-                            )}
-                        </strong>
-
-                        <span>
-                            ${money(
-                                item.product.price
-                            )}
-                        </span>
-
-
-                        <div class="quantity">
-
-                            <button
-                                data-minus="${item.product.id}"
-                            >
-                                −
-                            </button>
-
-                            <b>
-                                ${item.quantity}
-                            </b>
-
-                            <button
-                                data-plus="${item.product.id}"
-                            >
-                                +
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        class="remove-cart"
-                        data-remove="${item.product.id}"
-                    >
-                        ✕
-                    </button>
-
-                </div>
-
-            `
-        )
-        .join("");
+        }
+    );
 
 }
 
 
 
-/* =====================================================
+/* ============================================================
+   CONFIG OPTIONS
+============================================================ */
+
+function setupConfigOptions() {
+
+
+    document
+        .querySelectorAll(
+            ".network-option"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        networkSetting =
+                            button.dataset.value;
+
+
+                        document
+                            .querySelectorAll(
+                                ".network-option"
+                            )
+                            .forEach(
+                                item =>
+                                    item.classList.remove(
+                                        "active"
+                                    )
+                            );
+
+
+                        button.classList.add(
+                            "active"
+                        );
+
+
+                        updateAdaptiveEngine();
+
+                    }
+                );
+
+            }
+        );
+
+
+
+    document
+        .querySelectorAll(
+            ".device-option"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        deviceSetting =
+                            button.dataset.value;
+
+
+                        document
+                            .querySelectorAll(
+                                ".device-option"
+                            )
+                            .forEach(
+                                item =>
+                                    item.classList.remove(
+                                        "active"
+                                    )
+                            );
+
+
+                        button.classList.add(
+                            "active"
+                        );
+
+
+                        updateAdaptiveEngine();
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+
+
+/* ============================================================
+   CONFIG MODAL
+============================================================ */
+
+function openConfig() {
+
+    updateAdaptiveEngine();
+
+    $("configOverlay")
+        ?.classList.add("active");
+
+}
+
+
+function closeConfig() {
+
+    $("configOverlay")
+        ?.classList.remove("active");
+
+}
+
+
+function setupConfig() {
+
+    $("configButton")
+        ?.addEventListener(
+            "click",
+            openConfig
+        );
+
+
+    $("heroConfigButton")
+        ?.addEventListener(
+            "click",
+            openConfig
+        );
+
+
+    $("statusConfigButton")
+        ?.addEventListener(
+            "click",
+            openConfig
+        );
+
+
+    $("closeConfig")
+        ?.addEventListener(
+            "click",
+            closeConfig
+        );
+
+
+    $("configOverlay")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target ===
+                    $("configOverlay")
+                ) {
+
+                    closeConfig();
+
+                }
+
+            }
+        );
+
+}
+
+
+
+/* ============================================================
+   HIGH-END 3D POINTER EFFECT
+============================================================ */
+
+function setupHighEndHover() {
+
+    const grid =
+        $("productGrid");
+
+
+    if (!grid) {
+
+        return;
+
+    }
+
+
+    grid.addEventListener(
+        "pointermove",
+        event => {
+
+            if (
+                !document.body.classList.contains(
+                    "high-mode"
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            const card =
+                event.target.closest(
+                    ".product"
+                );
+
+
+            if (!card) {
+
+                return;
+
+            }
+
+
+            const rect =
+                card.getBoundingClientRect();
+
+
+            const x =
+                event.clientX -
+                rect.left;
+
+
+            const y =
+                event.clientY -
+                rect.top;
+
+
+            const rotateY =
+                ((x / rect.width) - .5) * 7;
+
+
+            const rotateX =
+                ((y / rect.height) - .5) * -5;
+
+
+            card.style.transform =
+                `
+                translateY(-9px)
+                rotateX(${rotateX}deg)
+                rotateY(${rotateY}deg)
+                scale(1.02)
+                `;
+
+        }
+    );
+
+
+    grid.addEventListener(
+        "pointerleave",
+        event => {
+
+            const card =
+                event.target.closest(
+                    ".product"
+                );
+
+
+            if (card) {
+
+                card.style.transform =
+                    "";
+
+            }
+
+        },
+        true
+    );
+
+}
+
+
+
+/* ============================================================
    PRODUCT MODAL
-===================================================== */
+============================================================ */
 
 function openProduct(id) {
 
@@ -1334,598 +1627,414 @@ function openProduct(id) {
         );
 
 
-    if (!product) return;
+    if (!product) {
+
+        return;
+
+    }
 
 
-    const specs =
-        (product.specs || [])
-            .map(
-                spec =>
-                    `<li>✓ ${escapeHTML(
-                        spec
-                    )}</li>`
-            )
-            .join("");
+    const image =
+        getAdaptiveImageURL(
+            product.image,
+            currentConfig ||
+            getModeConfig("MEDIUM")
+        );
 
 
-    get(
-        "productModalContent"
-    ).innerHTML = `
+    $("productModalContent").innerHTML = `
 
         <div class="product-modal-image">
 
             <img
-                src="${escapeHTML(
-                    product.image
-                )}"
-                alt="${escapeHTML(
-                    product.name
-                )}"
+                src="${escapeHTML(image)}"
+                alt="${escapeHTML(product.name)}"
             >
 
         </div>
 
 
-        <div>
+        <div class="product-modal-info">
 
             <span class="product-category">
-                ${escapeHTML(
-                    product.category
-                )}
+                ${escapeHTML(product.category)}
             </span>
 
-
             <h2>
-                ${escapeHTML(
-                    product.name
-                )}
+                ${escapeHTML(product.name)}
             </h2>
 
-
-            <div class="product-rating">
-                ★ ${product.rating}
-                · ${product.reviews} reviews
-            </div>
-
-
             <p>
-                ${escapeHTML(
-                    product.description
-                )}
+                ${escapeHTML(product.description)}
             </p>
 
+            <p>
+                ⭐ ${product.rating}
+                · ${product.reviews} reviews
+            </p>
 
-            <ul class="product-specs">
-                ${specs}
-            </ul>
+            <strong class="modal-price">
+                ${money(product.price)}
+            </strong>
 
-
-            <div
-                class="product-modal-bottom"
+            <button
+                class="primary-button"
+                data-modal-add="${product.id}"
             >
-
-                <strong
-                    class="product-modal-price"
-                >
-                    ${money(
-                        product.price
-                    )}
-                </strong>
-
-
-                <button
-                    class="primary-button"
-                    data-modal-add="${product.id}"
-                >
-                    Add to Cart
-                </button>
-
-            </div>
+                Add to Cart
+            </button>
 
         </div>
 
     `;
 
 
-    get("productOverlay")
-        .classList.add("active");
+    $("productOverlay")
+        ?.classList.add("active");
+
+}
+
+
+function closeProduct() {
+
+    $("productOverlay")
+        ?.classList.remove("active");
 
 }
 
 
 
-/* =====================================================
-   PERFORMANCE
-===================================================== */
+/* ============================================================
+   PRODUCT EVENTS
+============================================================ */
 
-function updatePerformance() {
+function setupProductEvents() {
 
-    const navigation =
-        performance.getEntriesByType(
-            "navigation"
-        )[0];
+    const grid =
+        $("productGrid");
 
 
-    if (navigation) {
+    if (!grid) {
 
-        get("metricLoad").textContent =
-            `${Math.round(
-                navigation.loadEventEnd ||
-                navigation.duration
-            )} ms`;
+        return;
 
     }
 
 
-    const resources =
-        performance.getEntriesByType(
-            "resource"
-        );
+    grid.addEventListener(
+        "click",
+        event => {
+
+            const add =
+                event.target.closest(
+                    "[data-add]"
+                );
 
 
-    get("metricResources").textContent =
-        resources.length;
+            if (add) {
+
+                addToCart(
+                    add.dataset.add
+                );
+
+                return;
+
+            }
 
 
-    let transfer = 0;
+            const productImage =
+                event.target.closest(
+                    "[data-product]"
+                );
 
 
-    resources.forEach(
-        item => {
+            const productCard =
+                event.target.closest(
+                    ".product"
+                );
 
-            transfer +=
-                item.transferSize || 0;
+
+            if (
+                productImage ||
+                productCard
+            ) {
+
+                const id =
+                    productCard?.dataset.id ||
+                    productImage?.dataset.product;
+
+
+                if (id) {
+
+                    openProduct(id);
+
+                }
+
+            }
 
         }
     );
 
 
-    get("metricTransfer").textContent =
-        `${(
-            transfer / 1024
-        ).toFixed(1)} KB`;
+
+    $("productOverlay")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target ===
+                    $("productOverlay")
+                ) {
+
+                    closeProduct();
+
+                }
+
+            }
+        );
 
 
-
-    if (
-        "PerformanceObserver"
-        in window
-    ) {
-
-        try {
-
-            const lcpObserver =
-                new PerformanceObserver(
-                    list => {
-
-                        const entries =
-                            list.getEntries();
-
-                        const last =
-                            entries[
-                                entries.length - 1
-                            ];
-
-
-                        if (last) {
-
-                            get(
-                                "metricLCP"
-                            ).textContent =
-                                `${Math.round(
-                                    last.startTime
-                                )} ms`;
-
-                        }
-
-                    }
-                );
-
-
-            lcpObserver.observe({
-                type: "largest-contentful-paint",
-                buffered: true
-            });
-
-        }
-        catch {}
-
-
-
-        try {
-
-            const clsObserver =
-                new PerformanceObserver(
-                    list => {
-
-                        let cls = 0;
-
-
-                        list
-                            .getEntries()
-                            .forEach(
-                                entry => {
-
-                                    if (
-                                        !entry.hadRecentInput
-                                    ) {
-
-                                        cls +=
-                                            entry.value;
-
-                                    }
-
-                                }
-                            );
-
-
-                        get(
-                            "metricCLS"
-                        ).textContent =
-                            cls.toFixed(3);
-
-                    }
-                );
-
-
-            clsObserver.observe({
-                type: "layout-shift",
-                buffered: true
-            });
-
-        }
-        catch {}
-
-
-
-        try {
-
-            const inpObserver =
-                new PerformanceObserver(
-                    list => {
-
-                        const entries =
-                            list.getEntries();
-
-
-                        const last =
-                            entries[
-                                entries.length - 1
-                            ];
-
-
-                        if (last) {
-
-                            get(
-                                "metricINP"
-                            ).textContent =
-                                `${Math.round(
-                                    last.duration
-                                )} ms`;
-
-                        }
-
-                    }
-                );
-
-
-            inpObserver.observe({
-                type: "event",
-                buffered: true,
-                durationThreshold: 40
-            });
-
-        }
-        catch {}
-
-    }
+    $("closeProduct")
+        ?.addEventListener(
+            "click",
+            closeProduct
+        );
 
 }
 
 
 
-/* =====================================================
-   TOAST
-===================================================== */
+/* ============================================================
+   CART
+============================================================ */
 
-function toast(message) {
+function addToCart(id) {
+
+    const product =
+        products.find(
+            item =>
+                String(item.id) ===
+                String(id)
+        );
+
+
+    if (!product) {
+
+        return;
+
+    }
+
+
+    cart.push(product);
+
+
+    updateCart();
+
+
+    showToast(
+        `${product.name} added to cart`
+    );
+
+}
+
+
+function updateCart() {
+
+    $("cartCount").textContent =
+        cart.length;
+
 
     const container =
-        get("toastContainer");
+        $("cartItems");
 
 
-    const element =
-        document.createElement(
-            "div"
-        );
+    if (!container) {
+
+        return;
+
+    }
 
 
-    element.className =
-        "toast";
+    if (!cart.length) {
+
+        container.innerHTML = `
+
+            <div class="cart-empty">
+
+                🛒
+
+                <h3>
+                    Your cart is empty
+                </h3>
+
+            </div>
+
+        `;
+
+        $("cartTotal").textContent =
+            "₹0";
+
+        return;
+
+    }
 
 
-    element.textContent =
-        message;
+    let total = 0;
 
 
-    container.appendChild(
-        element
-    );
+    container.innerHTML =
+        cart.map(
+            (product, index) => {
+
+                total +=
+                    Number(product.price);
 
 
-    setTimeout(
-        () => element.remove(),
-        2200
-    );
+                return `
+
+                <div class="cart-item">
+
+                    <img
+                        src="${escapeHTML(
+                            getAdaptiveImageURL(
+                                product.image,
+                                currentConfig
+                            )
+                        )}"
+                        alt="${escapeHTML(
+                            product.name
+                        )}"
+                    >
+
+
+                    <div class="cart-item-info">
+
+                        <strong>
+                            ${escapeHTML(
+                                product.name
+                            )}
+                        </strong>
+
+                        <span>
+                            ${money(
+                                product.price
+                            )}
+                        </span>
+
+                    </div>
+
+
+                    <button
+                        class="remove-cart"
+                        data-remove="${index}"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+                `;
+
+            }
+        ).join("");
+
+
+    $("cartTotal").textContent =
+        money(total);
 
 }
 
 
+function setupCart() {
 
-/* =====================================================
-   EVENTS
-===================================================== */
-
-function setupEvents() {
-
-
-    /* Search */
-
-    get("searchInput")
-        .addEventListener(
-            "input",
-            event => {
-
-                searchText =
-                    event.target.value;
-
-
-                get("clearSearch").style.display =
-                    searchText
-                        ? "block"
-                        : "none";
-
-
-                renderProducts();
-
-            }
-        );
-
-
-    get("clearSearch")
-        .addEventListener(
+    $("cartButton")
+        ?.addEventListener(
             "click",
             () => {
 
-                searchText = "";
-
-                get(
-                    "searchInput"
-                ).value = "";
-
-                get(
-                    "clearSearch"
-                ).style.display =
-                    "none";
-
-                renderProducts();
+                $("cartOverlay")
+                    ?.classList.add("active");
 
             }
         );
 
 
-    /* Categories */
+    $("closeCart")
+        ?.addEventListener(
+            "click",
+            () => {
 
-    document
-        .querySelectorAll(
-            ".category-card"
-        )
-        .forEach(
-            card => {
+                $("cartOverlay")
+                    ?.classList.remove("active");
 
-                card.addEventListener(
-                    "click",
-                    () =>
-                        setCategory(
-                            card.dataset.category
-                        )
+            }
+        );
+
+
+    $("cartOverlay")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target ===
+                    $("cartOverlay")
+                ) {
+
+                    $("cartOverlay")
+                        .classList.remove("active");
+
+                }
+
+            }
+        );
+
+
+    $("cartItems")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                const button =
+                    event.target.closest(
+                        "[data-remove]"
+                    );
+
+
+                if (!button) {
+
+                    return;
+
+                }
+
+
+                const index =
+                    Number(
+                        button.dataset.remove
+                    );
+
+
+                cart.splice(
+                    index,
+                    1
                 );
 
-            }
-        );
 
-
-    get("viewAllButton")
-        .addEventListener(
-            "click",
-            () =>
-                setCategory("ALL")
-        );
-
-
-    /* Hero buttons */
-
-    get("shopNowButton")
-        .addEventListener(
-            "click",
-            () => {
-
-                get(
-                    "products"
-                ).scrollIntoView({
-                    behavior: "smooth"
-                });
+                updateCart();
 
             }
         );
 
 
-    get("browseButton")
-        .addEventListener(
-            "click",
-            () => {
-
-                get(
-                    "categories"
-                ).scrollIntoView({
-                    behavior: "smooth"
-                });
-
-            }
-        );
-
-
-    get("promoButton")
-        .addEventListener(
-            "click",
-            () => {
-
-                get(
-                    "products"
-                ).scrollIntoView({
-                    behavior: "smooth"
-                });
-
-            }
-        );
-
-
-    /* Product actions */
-
-    get("productGrid")
-        .addEventListener(
-            "click",
-            event => {
-
-                const add =
-                    event.target.closest(
-                        "[data-add]"
-                    );
-
-
-                if (add) {
-
-                    addToCart(
-                        add.dataset.add
-                    );
-
-                    return;
-
-                }
-
-
-                const product =
-                    event.target.closest(
-                        "[data-product]"
-                    );
-
-
-                const image =
-                    event.target.closest(
-                        ".product-image"
-                    );
-
-
-                if (product) {
-
-                    openProduct(
-                        product.dataset.product
-                    );
-
-                    return;
-
-                }
-
-
-                if (image) {
-
-                    openProduct(
-                        image.dataset.id
-                    );
-
-                }
-
-            }
-        );
-
-
-    /* Cart */
-
-    get("cartButton")
-        .addEventListener(
-            "click",
-            () =>
-                get(
-                    "cartOverlay"
-                ).classList.add(
-                    "active"
-                )
-        );
-
-
-    get("closeCart")
-        .addEventListener(
-            "click",
-            () =>
-                get(
-                    "cartOverlay"
-                ).classList.remove(
-                    "active"
-                )
-        );
-
-
-    get("cartItems")
-        .addEventListener(
-            "click",
-            event => {
-
-                if (
-                    event.target.dataset.plus
-                ) {
-
-                    changeQuantity(
-                        event.target.dataset.plus,
-                        1
-                    );
-
-                }
-
-
-                if (
-                    event.target.dataset.minus
-                ) {
-
-                    changeQuantity(
-                        event.target.dataset.minus,
-                        -1
-                    );
-
-                }
-
-
-                if (
-                    event.target.dataset.remove
-                ) {
-
-                    removeCart(
-                        event.target.dataset.remove
-                    );
-
-                }
-
-            }
-        );
-
-
-    get("checkoutButton")
-        .addEventListener(
+    $("checkoutButton")
+        ?.addEventListener(
             "click",
             () => {
 
                 if (!cart.length) {
 
-                    toast(
+                    showToast(
                         "Your cart is empty"
                     );
 
@@ -1936,153 +2045,575 @@ function setupEvents() {
 
                 cart = [];
 
-                renderCart();
 
-                get(
-                    "cartOverlay"
-                ).classList.remove(
-                    "active"
-                );
+                updateCart();
 
 
-                toast(
-                    "Demo order completed successfully"
+                $("cartOverlay")
+                    ?.classList.remove(
+                        "active"
+                    );
+
+
+                showToast(
+                    "Demo order completed successfully!"
                 );
 
             }
         );
 
+}
 
-    /* Product modal */
 
-    get("closeProduct")
-        .addEventListener(
-            "click",
-            () =>
-                get(
-                    "productOverlay"
-                ).classList.remove(
-                    "active"
-                )
+
+/* ============================================================
+   RECOMMENDATION EVENTS
+============================================================ */
+
+document.addEventListener(
+    "click",
+    event => {
+
+        const button =
+            event.target.closest(
+                "[data-rec-add]"
+            );
+
+
+        if (button) {
+
+            addToCart(
+                button.dataset.recAdd
+            );
+
+        }
+
+
+        const modalButton =
+            event.target.closest(
+                "[data-modal-add]"
+            );
+
+
+        if (modalButton) {
+
+            addToCart(
+                modalButton.dataset.modalAdd
+            );
+
+            closeProduct();
+
+        }
+
+    }
+);
+
+
+
+/* ============================================================
+   TOAST
+============================================================ */
+
+function showToast(message) {
+
+    const container =
+        $("toastContainer");
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    const toast =
+        document.createElement(
+            "div"
         );
 
 
-    get("productModalContent")
-        .addEventListener(
-            "click",
-            event => {
+    toast.className =
+        "toast";
+
+
+    toast.textContent =
+        message;
+
+
+    container.appendChild(
+        toast
+    );
+
+
+    setTimeout(
+        () => {
+
+            toast.remove();
+
+        },
+        2200
+    );
+
+}
+
+
+
+/* ============================================================
+   PERFORMANCE TELEMETRY
+============================================================ */
+
+function setupPerformanceTelemetry() {
+
+    if (
+        !window.PerformanceObserver
+    ) {
+
+        return;
+
+    }
+
+
+
+    /* =========================
+       LCP
+    ========================= */
+
+    try {
+
+        const lcpObserver =
+            new PerformanceObserver(
+                list => {
+
+                    const entries =
+                        list.getEntries();
+
+
+                    const last =
+                        entries[
+                            entries.length - 1
+                        ];
+
+
+                    if (
+                        last &&
+                        $("metricLCP")
+                    ) {
+
+                        $("metricLCP")
+                            .textContent =
+                            `${Math.round(
+                                last.startTime
+                            )} ms`;
+
+                    }
+
+                }
+            );
+
+
+        lcpObserver.observe({
+
+            type:
+                "largest-contentful-paint",
+
+            buffered:
+                true
+
+        });
+
+    }
+    catch {}
+
+
+
+    /* =========================
+       CLS
+    ========================= */
+
+    try {
+
+        let cls =
+            0;
+
+
+        const clsObserver =
+            new PerformanceObserver(
+                list => {
+
+                    list
+                        .getEntries()
+                        .forEach(
+                            entry => {
+
+                                if (
+                                    !entry.hadRecentInput
+                                ) {
+
+                                    cls +=
+                                        entry.value;
+
+                                }
+
+                            }
+                        );
+
+
+                    if ($("metricCLS")) {
+
+                        $("metricCLS")
+                            .textContent =
+                            cls.toFixed(3);
+
+                    }
+
+                }
+            );
+
+
+        clsObserver.observe({
+
+            type:
+                "layout-shift",
+
+            buffered:
+                true
+
+        });
+
+    }
+    catch {}
+
+
+
+    /* =========================
+       INP
+    ========================= */
+
+    try {
+
+        const inpObserver =
+            new PerformanceObserver(
+                list => {
+
+                    const entries =
+                        list.getEntries();
+
+
+                    if (!entries.length) {
+
+                        return;
+
+                    }
+
+
+                    /*
+                       INP uses the longest
+                       interaction observed.
+                    */
+
+                    const longest =
+                        entries.reduce(
+                            (max, entry) =>
+                                Math.max(
+                                    max,
+                                    entry.duration
+                                ),
+                            0
+                        );
+
+
+                    if ($("metricINP")) {
+
+                        $("metricINP")
+                            .textContent =
+                            `${Math.round(
+                                longest
+                            )} ms`;
+
+                    }
+
+                }
+            );
+
+
+        inpObserver.observe({
+
+            type:
+                "event",
+
+            buffered:
+                true,
+
+            durationThreshold:
+                40
+
+        });
+
+    }
+    catch {}
+
+
+
+    /* =========================
+       NAVIGATION
+    ========================= */
+
+    window.addEventListener(
+        "load",
+        () => {
+
+            setTimeout(
+                () => {
+
+                    const navigation =
+                        performance.getEntriesByType(
+                            "navigation"
+                        )[0];
+
+
+                    if (navigation) {
+
+                        if ($("metricLoad")) {
+
+                            $("metricLoad")
+                                .textContent =
+                                `${Math.round(
+                                    navigation.loadEventEnd
+                                )} ms`;
+
+                        }
+
+                    }
+
+
+                    const resources =
+                        performance.getEntriesByType(
+                            "resource"
+                        );
+
+
+                    let totalBytes =
+                        0;
+
+
+                    resources.forEach(
+                        resource => {
+
+                            totalBytes +=
+                                resource.transferSize ||
+                                0;
+
+                        }
+                    );
+
+
+                    if ($("metricTransfer")) {
+
+                        $("metricTransfer")
+                            .textContent =
+                            `${(
+                                totalBytes / 1024
+                            ).toFixed(1)} KB`;
+
+                    }
+
+
+                    if ($("metricResources")) {
+
+                        $("metricResources")
+                            .textContent =
+                            resources.length;
+
+                    }
+
+                },
+                500
+            );
+
+        }
+    );
+
+}
+
+
+
+/* ============================================================
+   NETWORK LIVE CHANGES
+============================================================ */
+
+function setupNetworkListeners() {
+
+    const connection =
+        navigator.connection ||
+        navigator.mozConnection ||
+        navigator.webkitConnection;
+
+
+    if (connection) {
+
+        connection.addEventListener(
+            "change",
+            () => {
 
                 if (
-                    event.target.dataset.modalAdd
+                    networkSetting ===
+                    "AUTO"
                 ) {
 
-                    addToCart(
-                        event.target.dataset.modalAdd
-                    );
-
-                    get(
-                        "productOverlay"
-                    ).classList.remove(
-                        "active"
-                    );
+                    updateAdaptiveEngine();
 
                 }
 
             }
         );
 
+    }
 
-    /* Config */
 
-    get("configButton")
-        .addEventListener(
-            "click",
-            () => {
+    window.addEventListener(
+        "online",
+        () => {
 
-                updateConfigUI();
+            if (
+                networkSetting ===
+                "AUTO"
+            ) {
 
-                get(
-                    "configOverlay"
-                ).classList.add(
-                    "active"
-                );
+                updateAdaptiveEngine();
 
             }
-        );
+
+        }
+    );
 
 
-    get("closeConfig")
-        .addEventListener(
-            "click",
-            () =>
-                get(
-                    "configOverlay"
-                ).classList.remove(
-                    "active"
-                )
-        );
+    window.addEventListener(
+        "offline",
+        () => {
 
+            if (
+                networkSetting ===
+                "AUTO"
+            ) {
 
-    /* Close overlay by background */
+                updateAdaptiveEngine();
 
-    [
-        "configOverlay",
-        "productOverlay"
-    ]
-        .forEach(id => {
+            }
 
-            get(id)
-                .addEventListener(
-                    "click",
-                    event => {
-
-                        if (
-                            event.target.id === id
-                        ) {
-
-                            get(id)
-                                .classList
-                                .remove(
-                                    "active"
-                                );
-
-                        }
-
-                    }
-                );
-
-        });
-
-
-    setupOptions();
+        }
+    );
 
 }
 
 
 
-/* =====================================================
-   START
-===================================================== */
+/* ============================================================
+   ESCAPE
+============================================================ */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key ===
+            "Escape"
+        ) {
+
+            closeConfig();
+
+            closeProduct();
+
+            $("cartOverlay")
+                ?.classList.remove(
+                    "active"
+                );
+
+        }
+
+    }
+);
+
+
+
+/* ============================================================
+   EXPLORE BUTTON
+============================================================ */
+
+function setupExplore() {
+
+    $("exploreButton")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                $("products")
+                    ?.scrollIntoView({
+                        behavior:
+                            "smooth"
+                    });
+
+            }
+        );
+
+}
+
+
+
+/* ============================================================
+   INITIALIZATION
+============================================================ */
 
 async function init() {
 
-    detectedNetwork =
-        detectNetwork();
+    setupConfig();
+
+    setupConfigOptions();
+
+    setupCategories();
+
+    setupSearch();
+
+    setupProductEvents();
+
+    setupCart();
+
+    setupHighEndHover();
+
+    setupNetworkListeners();
+
+    setupPerformanceTelemetry();
+
+    setupExplore();
 
 
-    detectedDevice =
-        detectDevice();
+    /*
+       Initial detection
+    */
+
+    updateAdaptiveEngine();
 
 
-    setupEvents();
-
-    renderCart();
-
-    updatePerformance();
+    /*
+       Load backend catalog
+       with local fallback.
+    */
 
     await loadProducts();
 
-    updateConfigUI();
+
+    /*
+       Apply adaptive mode again
+       after catalog loads.
+    */
+
+    updateAdaptiveEngine();
+
+
+    console.log(
+        "[AdaptiveWeb] AdaptiveShop initialized"
+    );
 
 }
 
