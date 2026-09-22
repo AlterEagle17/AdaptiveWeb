@@ -46,8 +46,11 @@ let cart = [];
 let activeCategory = "ALL";
 let searchTerm = "";
 
-let networkSetting = "AUTO";
-let deviceSetting = "AUTO";
+let networkSetting =
+    localStorage.getItem("adaptiveNetworkSetting") || "AUTO";
+
+let deviceSetting =
+    localStorage.getItem("adaptiveDeviceSetting") || "AUTO";
 
 let currentNetwork = null;
 let currentDevice = null;
@@ -1468,11 +1471,14 @@ function setupConfigOptions() {
                         );
 
 
-                        networkSetting =
-                            button.dataset.value;
+                        networkSetting = button.dataset.value;
 
+            localStorage.setItem(
+                "adaptiveNetworkSetting",
+                networkSetting
+                  );
 
-                        updateAdaptiveEngine();
+updateAdaptiveEngine();
 
                     }
                 );
@@ -1510,11 +1516,14 @@ function setupConfigOptions() {
 
 
                         deviceSetting =
-                            button.dataset.value;
+    button.dataset.value;
 
+localStorage.setItem(
+    "adaptiveDeviceSetting",
+    deviceSetting
+);
 
-                        updateAdaptiveEngine();
-
+updateAdaptiveEngine();
                     }
                 );
 
