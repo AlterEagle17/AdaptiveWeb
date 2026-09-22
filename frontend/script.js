@@ -12,7 +12,8 @@
     // APPLICATION STATE & CONSTANTS
     // ------------------------------------------------------------------------
 
-    const API_BASE_URL = window.API_BASE_URL || "http://localhost:8080/api";
+   // const API_BASE_URL = window.API_BASE_URL || "http://localhost:8080/api";
+    const API_BASE_URL = window.API_BASE_URL || "https://adaptiveweb.onrender.com/api";
     let isBackendAvailable = false;
 
     let activeCategory = "ALL";
