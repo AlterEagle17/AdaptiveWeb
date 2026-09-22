@@ -1897,4 +1897,4 @@ input {
 
 .toast {
     box-shadow: 0 10px 30px rgba(63, 88, 117, 0.2), 0 0 16px rgba(34, 211, 238, 0.16);
-}
+} 
