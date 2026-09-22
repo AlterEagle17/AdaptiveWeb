@@ -1,39 +1,18 @@
-"use strict";
-
-
-/* ============================================================
-   CONFIG
-============================================================ */
-
-const API_BASE_URL =
-    window.API_BASE_URL ||
-    "https://adaptiveweb.onrender.com/api";
-
-
-/* ============================================================
-   STATE
-============================================================ */
+const API_BASE_URL = "https://adaptiveweb.onrender.com/api";
 
 let products = [];
-
+let cart = [];
 let activeCategory = "ALL";
-
 let searchText = "";
 
-let cart = [];
-
 let networkSetting = "AUTO";
-
 let deviceSetting = "AUTO";
 
 let detectedNetwork = "MEDIUM";
-
 let detectedDevice = "MEDIUM";
 
 let currentMode = "MEDIUM";
-
 let currentConfig = null;
-
 
 
 /* ============================================================
@@ -41,14 +20,12 @@ let currentConfig = null;
 ============================================================ */
 
 const fallbackProducts = [
-
     {
         id: 1,
         name: "Nova X Pro 5G",
         category: "SMARTPHONES",
         price: 69999,
         rating: 4.9,
-        reviews: 342,
         badge: "FLAGSHIP",
         description:
             "Premium smartphone with OLED display and advanced camera system.",
@@ -62,7 +39,6 @@ const fallbackProducts = [
         category: "LAPTOPS",
         price: 149999,
         rating: 4.8,
-        reviews: 189,
         badge: "PRO POWER",
         description:
             "High-performance laptop for creators, developers and professionals.",
@@ -76,7 +52,6 @@ const fallbackProducts = [
         category: "AUDIO",
         price: 18999,
         rating: 4.9,
-        reviews: 512,
         badge: "HI-RES AUDIO",
         description:
             "Premium wireless headphones with active noise cancellation.",
@@ -90,7 +65,6 @@ const fallbackProducts = [
         category: "ACCESSORIES",
         price: 42999,
         rating: 4.7,
-        reviews: 220,
         badge: "TITANIUM",
         description:
             "Premium smartwatch with GPS and health tracking.",
@@ -104,7 +78,6 @@ const fallbackProducts = [
         category: "SMARTPHONES",
         price: 89999,
         rating: 4.8,
-        reviews: 147,
         badge: "120HZ",
         description:
             "Professional tablet for entertainment and productivity.",
@@ -118,7 +91,6 @@ const fallbackProducts = [
         category: "ACCESSORIES",
         price: 9499,
         rating: 4.9,
-        reviews: 410,
         badge: "CUSTOM",
         description:
             "Premium mechanical keyboard with hot-swappable switches.",
@@ -132,7 +104,6 @@ const fallbackProducts = [
         category: "ACCESSORIES",
         price: 44999,
         rating: 4.6,
-        reviews: 95,
         badge: "144HZ HDR",
         description:
             "4K gaming display with high refresh rate and HDR support.",
@@ -146,77 +117,31 @@ const fallbackProducts = [
         category: "AUDIO",
         price: 14999,
         rating: 4.8,
-        reviews: 310,
         badge: "360 SOUND",
         description:
             "Immersive wireless speaker with spatial audio.",
         image:
             "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=1000&q=85"
-    },
-
-    {
-        id: 9,
-        name: "Alpha Mirrorless Camera",
-        category: "ACCESSORIES",
-        price: 189999,
-        rating: 5.0,
-        reviews: 88,
-        badge: "8K CAMERA",
-        description:
-            "Professional mirrorless camera with high-resolution sensor.",
-        image:
-            "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=85"
-    },
-
-    {
-        id: 10,
-        name: "Aeroflex Wireless Mouse",
-        category: "ACCESSORIES",
-        price: 6999,
-        rating: 4.7,
-        reviews: 275,
-        badge: "ULTRALIGHT",
-        description:
-            "Lightweight wireless mouse designed for gaming and productivity.",
-        image:
-            "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=1000&q=85"
     }
-
 ];
 
 
-
 /* ============================================================
-   HELPER
+   HELPERS
 ============================================================ */
 
-function $(id) {
+const $ = (id) => document.getElementById(id);
 
-    return document.getElementById(id);
+const money = (number) =>
+    "₹" + Number(number || 0).toLocaleString("en-IN");
 
-}
-
-
-function money(value) {
-
-    return "₹" +
-        Number(value || 0)
-            .toLocaleString("en-IN");
-
-}
-
-
-function escapeHTML(value) {
-
-    return String(value ?? "")
+const escapeHTML = (value) =>
+    String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
-
-}
-
 
 
 /* ============================================================
@@ -226,32 +151,23 @@ function escapeHTML(value) {
 function detectNetwork() {
 
     if (!navigator.onLine) {
-
         return "LOW";
-
     }
-
 
     const connection =
         navigator.connection ||
         navigator.mozConnection ||
         navigator.webkitConnection;
 
-
     if (!connection) {
-
         return "MEDIUM";
-
     }
-
 
     const type =
         connection.effectiveType || "";
 
-
     const downlink =
         Number(connection.downlink || 0);
-
 
     const rtt =
         Number(connection.rtt || 0);
@@ -263,9 +179,7 @@ function detectNetwork() {
         downlink < 1.5 ||
         rtt >= 400
     ) {
-
         return "LOW";
-
     }
 
 
@@ -273,16 +187,12 @@ function detectNetwork() {
         downlink >= 5 &&
         rtt < 150
     ) {
-
         return "HIGH";
-
     }
 
 
     return "MEDIUM";
-
 }
-
 
 
 /* ============================================================
@@ -294,7 +204,6 @@ function detectDevice() {
     const cores =
         navigator.hardwareConcurrency || 4;
 
-
     const memory =
         navigator.deviceMemory;
 
@@ -303,9 +212,7 @@ function detectDevice() {
         cores >= 8 &&
         (!memory || memory >= 8)
     ) {
-
         return "HIGH";
-
     }
 
 
@@ -313,62 +220,60 @@ function detectDevice() {
         cores >= 4 &&
         (!memory || memory >= 4)
     ) {
-
         return "MEDIUM";
-
     }
 
 
     return "LOW";
-
 }
-
 
 
 /* ============================================================
    ADAPTIVE DECISION
 ============================================================ */
 
-function calculateAdaptiveMode(
-    network,
-    device
-) {
+function decide(network, device) {
 
     /*
-       Weakest-link rule
+        LOW network OR LOW device
+        → LOW experience
     */
 
     if (
         network === "LOW" ||
         device === "LOW"
     ) {
-
         return "LOW";
-
     }
 
+
+    /*
+        HIGH network + HIGH device
+        → FULL experience
+    */
 
     if (
         network === "HIGH" &&
         device === "HIGH"
     ) {
-
         return "HIGH";
-
     }
 
 
-    return "MEDIUM";
+    /*
+        Everything else
+        → MEDIUM
+    */
 
+    return "MEDIUM";
 }
 
 
-
 /* ============================================================
-   MODE CONFIG
+   MODE CONFIGURATION
 ============================================================ */
 
-function getModeConfig(mode) {
+function config(mode) {
 
     if (mode === "HIGH") {
 
@@ -377,29 +282,28 @@ function getModeConfig(mode) {
             title:
                 "FULL EXPERIENCE",
 
-            imageWidth:
+            width:
                 1000,
 
-            imageQuality:
-                85,
+            q:
+                88,
 
-            javascript:
+            js:
                 "FULL",
 
-            animations:
+            anim:
                 "FULL",
 
             prefetch:
                 "ON",
 
-            recommendations:
-                true,
+            recs:
+                3,
 
-            description:
-                "High-capability experience enabled with rich animations, enhanced hover effects, high-quality images and prefetching."
+            desc:
+                "Maximum visual experience: animated environment, 3D product interactions, high-quality media and smart prefetching."
 
         };
-
     }
 
 
@@ -408,71 +312,140 @@ function getModeConfig(mode) {
         return {
 
             title:
-                "LIGHTWEIGHT",
+                "LIGHTWEIGHT EXPERIENCE",
 
-            imageWidth:
+            width:
                 320,
 
-            imageQuality:
+            q:
                 40,
 
-            javascript:
+            js:
                 "ESSENTIAL",
 
-            animations:
+            anim:
                 "MINIMAL",
 
             prefetch:
                 "OFF",
 
-            recommendations:
-                false,
+            recs:
+                0,
 
-            description:
-                "Lightweight experience enabled. Heavy animations and unnecessary effects are removed to reduce processing cost."
+            desc:
+                "Low-bandwidth and low-device mode: heavy decoration, movement and recommendations are removed."
 
         };
-
     }
 
 
     return {
 
         title:
-            "BALANCED",
+            "BALANCED EXPERIENCE",
 
-        imageWidth:
+        width:
             600,
 
-        imageQuality:
+        q:
             65,
 
-        javascript:
+        js:
             "BALANCED",
 
-        animations:
+        anim:
             "REDUCED",
 
         prefetch:
             "OFF",
 
-        recommendations:
-            true,
+        recs:
+            1,
 
-        description:
-            "Balanced experience with moderate image quality and restrained animations."
+        desc:
+            "Balanced mode keeps useful visual feedback while avoiding expensive effects."
 
     };
-
 }
 
 
-
 /* ============================================================
-   APPLY VISUAL MODE
+   ADAPTIVE IMAGE URL
 ============================================================ */
 
-function applyVisualMode(mode) {
+function imageUrl(src, settings) {
+
+    try {
+
+        const url =
+            new URL(src);
+
+        url.searchParams.set(
+            "w",
+            settings.width
+        );
+
+        url.searchParams.set(
+            "q",
+            settings.q
+        );
+
+        return url.toString();
+
+    } catch {
+
+        return src;
+
+    }
+}
+
+
+/* ============================================================
+   MAIN ADAPTIVE ENGINE
+============================================================ */
+
+function applyMode() {
+
+    /*
+        DETECT
+    */
+
+    detectedNetwork =
+        detectNetwork();
+
+    detectedDevice =
+        detectDevice();
+
+
+    /*
+        DECIDE
+    */
+
+    const effectiveNetwork =
+        networkSetting === "AUTO"
+            ? detectedNetwork
+            : networkSetting;
+
+    const effectiveDevice =
+        deviceSetting === "AUTO"
+            ? detectedDevice
+            : deviceSetting;
+
+
+    currentMode =
+        decide(
+            effectiveNetwork,
+            effectiveDevice
+        );
+
+
+    currentConfig =
+        config(currentMode);
+
+
+    /*
+        ADAPT VISUAL MODE
+    */
 
     document.body.classList.remove(
         "high-mode",
@@ -482,70 +455,136 @@ function applyVisualMode(mode) {
 
 
     document.body.classList.add(
-        `${mode.toLowerCase()}-mode`
+        currentMode.toLowerCase() +
+        "-mode"
     );
 
 
-    document.body.dataset.adaptiveMode =
-        mode;
+    /*
+        HERO
+    */
 
+    if ($("heroMode")) {
 
-    currentMode =
-        mode;
-
-}
-
-
-
-/* ============================================================
-   IMAGE ADAPTATION
-============================================================ */
-
-function getAdaptiveImageURL(
-    original,
-    config
-) {
-
-    try {
-
-        const url =
-            new URL(original);
-
-
-        url.searchParams.set(
-            "w",
-            config.imageWidth
-        );
-
-
-        url.searchParams.set(
-            "q",
-            config.imageQuality
-        );
-
-
-        return url.toString();
-
-    }
-    catch {
-
-        return original;
+        $("heroMode").textContent =
+            currentMode;
 
     }
 
-}
+
+    /*
+        CONFIG PANEL
+    */
+
+    if ($("detectedNetwork")) {
+
+        $("detectedNetwork").textContent =
+            "Detected: " +
+            detectedNetwork;
+
+    }
 
 
+    if ($("detectedDevice")) {
 
-/* ============================================================
-   PREFETCH
-============================================================ */
+        $("detectedDevice").textContent =
+            "Detected: " +
+            detectedDevice;
 
-function applyPrefetch(config) {
+    }
+
+
+    if ($("deliveryBadge")) {
+
+        $("deliveryBadge").textContent =
+            `${effectiveNetwork} / ${effectiveDevice}`;
+
+    }
+
+
+    if ($("deliveryMode")) {
+
+        $("deliveryMode").textContent =
+            currentConfig.title;
+
+    }
+
+
+    if ($("deliveryDescription")) {
+
+        $("deliveryDescription").textContent =
+            currentConfig.desc;
+
+    }
+
+
+    if ($("detailImages")) {
+
+        $("detailImages").textContent =
+            `${currentConfig.width}px / q${currentConfig.q}`;
+
+    }
+
+
+    if ($("detailJS")) {
+
+        $("detailJS").textContent =
+            currentConfig.js;
+
+    }
+
+
+    if ($("detailAnimations")) {
+
+        $("detailAnimations").textContent =
+            currentConfig.anim;
+
+    }
+
+
+    if ($("detailPrefetch")) {
+
+        $("detailPrefetch").textContent =
+            currentConfig.prefetch;
+
+    }
+
+
+    /*
+        STATUS BAR
+    */
+
+    if ($("shopStatus")) {
+
+        $("shopStatus").textContent =
+            `${effectiveNetwork} Network · ` +
+            `${effectiveDevice} Device → ` +
+            `${currentConfig.title}`;
+
+    }
+
+
+    /*
+        PRODUCT MODE TEXT
+    */
+
+    if ($("productMode")) {
+
+        $("productMode").textContent =
+            `${currentConfig.title} · ` +
+            `Image q${currentConfig.q} · ` +
+            `${currentConfig.anim} visual layer`;
+
+    }
+
+
+    /*
+        PREFETCH
+    */
 
     document
         .querySelectorAll(
-            "link[data-adaptive-prefetch]"
+            "[data-prefetch]"
         )
         .forEach(
             element =>
@@ -554,260 +593,60 @@ function applyPrefetch(config) {
 
 
     if (
-        config.prefetch !== "ON"
+        currentConfig.prefetch === "ON" &&
+        products.length > 1
     ) {
 
-        return;
+        const link =
+            document.createElement("link");
 
+        link.rel =
+            "prefetch";
+
+        link.as =
+            "image";
+
+        link.href =
+            imageUrl(
+                products[1].image,
+                currentConfig
+            );
+
+        link.dataset.prefetch =
+            "1";
+
+        document.head.appendChild(link);
     }
-
-
-    if (
-        products.length < 2
-    ) {
-
-        return;
-
-    }
-
-
-    const link =
-        document.createElement("link");
-
-
-    link.rel =
-        "prefetch";
-
-
-    link.as =
-        "image";
-
-
-    link.href =
-        getAdaptiveImageURL(
-            products[1].image,
-            config
-        );
-
-
-    link.dataset.adaptivePrefetch =
-        "true";
-
-
-    document.head.appendChild(
-        link
-    );
-
-}
-
-
-
-/* ============================================================
-   ADAPTIVE ENGINE
-============================================================ */
-
-function updateAdaptiveEngine() {
-
-    detectedNetwork =
-        detectNetwork();
-
-
-    detectedDevice =
-        detectDevice();
-
-
-    const effectiveNetwork =
-        networkSetting === "AUTO"
-            ? detectedNetwork
-            : networkSetting;
-
-
-    const effectiveDevice =
-        deviceSetting === "AUTO"
-            ? detectedDevice
-            : deviceSetting;
-
-
-    const mode =
-        calculateAdaptiveMode(
-            effectiveNetwork,
-            effectiveDevice
-        );
-
-
-    const config =
-        getModeConfig(mode);
-
-
-    currentConfig =
-        config;
 
 
     /*
-       DETECT
-       ↓
-       DECIDE
-       ↓
-       ADAPT
+        RENDER CONTENT
     */
 
-    applyVisualMode(mode);
-
-
-    updateAdaptiveUI(
-        effectiveNetwork,
-        effectiveDevice,
-        config
-    );
-
-
-    applyPrefetch(config);
-
-
-    updateProductText(
-        config
-    );
-
+    renderProducts();
 }
 
 
-
 /* ============================================================
-   ADAPTIVE UI
-============================================================ */
-
-function updateAdaptiveUI(
-    network,
-    device,
-    config
-) {
-
-    if ($("detectedNetwork")) {
-
-        $("detectedNetwork").textContent =
-            `Detected: ${detectedNetwork}`;
-
-    }
-
-
-    if ($("detectedDevice")) {
-
-        $("detectedDevice").textContent =
-            `Detected: ${detectedDevice}`;
-
-    }
-
-
-    if ($("deliveryBadge")) {
-
-        $("deliveryBadge").textContent =
-            `${network} / ${device}`;
-
-    }
-
-
-    if ($("deliveryMode")) {
-
-        $("deliveryMode").textContent =
-            config.title;
-
-    }
-
-
-    if ($("deliveryDescription")) {
-
-        $("deliveryDescription").textContent =
-            config.description;
-
-    }
-
-
-    if ($("detailImages")) {
-
-        $("detailImages").textContent =
-            `${config.imageWidth}px / q${config.imageQuality}`;
-
-    }
-
-
-    if ($("detailJS")) {
-
-        $("detailJS").textContent =
-            config.javascript;
-
-    }
-
-
-    if ($("detailAnimations")) {
-
-        $("detailAnimations").textContent =
-            config.animations;
-
-    }
-
-
-    if ($("detailPrefetch")) {
-
-        $("detailPrefetch").textContent =
-            config.prefetch;
-
-    }
-
-
-    if ($("detailNetwork")) {
-
-        $("detailNetwork").textContent =
-            network;
-
-    }
-
-
-    if ($("detailDevice")) {
-
-        $("detailDevice").textContent =
-            device;
-
-    }
-
-
-    if ($("shopStatus")) {
-
-        $("shopStatus").textContent =
-            `${network} Network · ${device} Device → ${config.title}`;
-
-    }
-
-}
-
-
-
-/* ============================================================
-   PRODUCT RENDERING
+   PRODUCT RENDER
 ============================================================ */
 
 function renderProducts() {
 
-    const grid =
-        $("productGrid");
-
-
-    if (!grid) {
-
-        return;
-
-    }
-
-
-    let filtered =
+    let list =
         [...products];
 
+
+    /*
+        CATEGORY FILTER
+    */
 
     if (
         activeCategory !== "ALL"
     ) {
 
-        filtered =
-            filtered.filter(
+        list =
+            list.filter(
                 product =>
                     product.category ===
                     activeCategory
@@ -816,92 +655,76 @@ function renderProducts() {
     }
 
 
+    /*
+        SEARCH FILTER
+    */
+
     if (
         searchText.trim()
     ) {
 
         const query =
             searchText
-                .trim()
-                .toLowerCase();
+                .toLowerCase()
+                .trim();
 
 
-        filtered =
-            filtered.filter(
-                product =>
+        list =
+            list.filter(
+                product => {
 
-                    product.name
+                    const text =
+                        `${product.name} ` +
+                        `${product.category} ` +
+                        `${product.description}`;
+
+                    return text
                         .toLowerCase()
-                        .includes(query)
+                        .includes(query);
 
-                    ||
-
-                    product.category
-                        .toLowerCase()
-                        .includes(query)
-
-                    ||
-
-                    product.description
-                        .toLowerCase()
-                        .includes(query)
+                }
             );
 
     }
 
 
-    if (!filtered.length) {
-
-        grid.innerHTML =
-            "";
-
-
-        if ($("noResults")) {
-
-            $("noResults").style.display =
-                "block";
-
-        }
-
-
-        if ($("productCount")) {
-
-            $("productCount").textContent =
-                "0 products";
-
-        }
-
-
-        return;
-
-    }
-
-
-    if ($("noResults")) {
-
-        $("noResults").style.display =
-            "none";
-
-    }
-
+    /*
+        COUNT
+    */
 
     if ($("productCount")) {
 
         $("productCount").textContent =
-            `${filtered.length} products`;
+            `${list.length} products`;
 
     }
 
 
-    grid.innerHTML =
-        filtered.map(
+    /*
+        NO RESULTS
+    */
+
+    if ($("noResults")) {
+
+        $("noResults").hidden =
+            list.length !== 0;
+
+    }
+
+
+    /*
+        PRODUCT HTML
+    */
+
+    $("productGrid").innerHTML =
+        list.map(
             product => {
 
                 const image =
-                    getAdaptiveImageURL(
+                    imageUrl(
                         product.image,
                         currentConfig ||
-                        getModeConfig("MEDIUM")
+                        config("MEDIUM")
                     );
 
 
@@ -912,10 +735,7 @@ function renderProducts() {
                     data-id="${product.id}"
                 >
 
-                    <div
-                        class="product-image"
-                        data-product="${product.id}"
-                    >
+                    <div class="product-image">
 
                         <span class="product-badge">
                             ${escapeHTML(
@@ -927,7 +747,6 @@ function renderProducts() {
                             src="${escapeHTML(image)}"
                             alt="${escapeHTML(product.name)}"
                             loading="lazy"
-                            decoding="async"
                         >
 
                     </div>
@@ -957,7 +776,7 @@ function renderProducts() {
                         </h3>
 
 
-                        <p class="product-description">
+                        <p class="product-desc">
                             ${escapeHTML(
                                 product.description
                             )}
@@ -966,7 +785,7 @@ function renderProducts() {
 
                         <div class="product-bottom">
 
-                            <strong class="product-price">
+                            <strong class="price">
                                 ${money(product.price)}
                             </strong>
 
@@ -987,38 +806,13 @@ function renderProducts() {
                 `;
 
             }
-        ).join("");
+        )
+        .join("");
 
 
     renderRecommendations();
 
-
-    updateProductText(
-        currentConfig
-    );
-
 }
-
-
-
-/* ============================================================
-   PRODUCT MODE TEXT
-============================================================ */
-
-function updateProductText(config) {
-
-    if (!$("productMode") || !config) {
-
-        return;
-
-    }
-
-
-    $("productMode").textContent =
-        `${config.title} · Images ${config.imageQuality}% · ${config.animations} animations`;
-
-}
-
 
 
 /* ============================================================
@@ -1028,23 +822,15 @@ function updateProductText(config) {
 function renderRecommendations() {
 
     const container =
-        $("recommendationGrid");
-
+        $("recommendGrid");
 
     const section =
         $("recommendations");
 
 
-    if (!container || !section) {
-
-        return;
-
-    }
-
-
     if (
         !currentConfig ||
-        !currentConfig.recommendations
+        currentConfig.recs === 0
     ) {
 
         section.style.display =
@@ -1062,20 +848,17 @@ function renderRecommendations() {
         "flex";
 
 
-    const count =
-        currentMode === "HIGH"
-            ? 3
-            : 1;
-
-
     container.innerHTML =
         products
-            .slice(0, count)
+            .slice(
+                0,
+                currentConfig.recs
+            )
             .map(
                 product => {
 
                     const image =
-                        getAdaptiveImageURL(
+                        imageUrl(
                             product.image,
                             currentConfig
                         );
@@ -1090,7 +873,7 @@ function renderRecommendations() {
                             alt="${escapeHTML(product.name)}"
                         >
 
-                        <div class="rec-info">
+                        <div>
 
                             <strong>
                                 ${escapeHTML(
@@ -1099,14 +882,16 @@ function renderRecommendations() {
                             </strong>
 
                             <span>
-                                ${money(product.price)}
+                                ${money(
+                                    product.price
+                                )}
                             </span>
 
                         </div>
 
+
                         <button
-                            class="rec-btn"
-                            data-rec-add="${product.id}"
+                            data-rec="${product.id}"
                         >
                             +
                         </button>
@@ -1122,37 +907,24 @@ function renderRecommendations() {
 }
 
 
-
 /* ============================================================
-   LOAD BACKEND PRODUCTS
+   LOAD PRODUCTS FROM SPRING BOOT
 ============================================================ */
 
 async function loadProducts() {
 
     try {
 
-        const controller =
-            new AbortController();
-
-
-        const timeout =
-            setTimeout(
-                () => controller.abort(),
-                5000
-            );
-
-
         const response =
             await fetch(
                 `${API_BASE_URL}/products`,
                 {
                     signal:
-                        controller.signal
+                        AbortSignal.timeout(
+                            4500
+                        )
                 }
             );
-
-
-        clearTimeout(timeout);
 
 
         if (!response.ok) {
@@ -1175,7 +947,7 @@ async function loadProducts() {
 
             products =
                 data.map(
-                    (item, index) => {
+                    (product, index) => {
 
                         const fallback =
                             fallbackProducts[
@@ -1186,49 +958,13 @@ async function loadProducts() {
 
                         return {
 
-                            id:
-                                item.id ??
-                                fallback.id,
+                            ...fallback,
 
-                            name:
-                                item.name ??
-                                fallback.name,
-
-                            category:
-                                String(
-                                    item.category ??
-                                    fallback.category
-                                ).toUpperCase(),
-
-                            price:
-                                Number(
-                                    item.price ??
-                                    fallback.price
-                                ),
-
-                            rating:
-                                Number(
-                                    item.rating ??
-                                    fallback.rating
-                                ),
-
-                            reviews:
-                                Number(
-                                    item.reviews ??
-                                    fallback.reviews
-                                ),
-
-                            badge:
-                                item.badge ??
-                                fallback.badge,
-
-                            description:
-                                item.description ??
-                                fallback.description,
+                            ...product,
 
                             image:
-                                item.imageUrl ??
-                                item.image ??
+                                product.imageUrl ||
+                                product.image ||
                                 fallback.image
 
                         };
@@ -1236,20 +972,19 @@ async function loadProducts() {
                     }
                 );
 
-        }
-        else {
+        } else {
 
             products =
                 [...fallbackProducts];
 
         }
 
-    }
-    catch (error) {
+    } catch {
 
         console.warn(
-            "[AdaptiveShop] Using fallback catalog"
+            "Backend unavailable. Using local products."
         );
+
 
         products =
             [...fallbackProducts];
@@ -1257,10 +992,9 @@ async function loadProducts() {
     }
 
 
-    renderProducts();
+    applyMode();
 
 }
-
 
 
 /* ============================================================
@@ -1271,29 +1005,32 @@ function setupCategories() {
 
     document
         .querySelectorAll(
-            ".category-card"
+            ".category"
         )
         .forEach(
-            card => {
+            button => {
 
-                card.addEventListener(
+                button.addEventListener(
                     "click",
                     () => {
 
                         activeCategory =
-                            card.dataset.category;
+                            button.dataset.category;
 
 
                         document
                             .querySelectorAll(
-                                ".category-card"
+                                ".category"
                             )
                             .forEach(
-                                item =>
+                                item => {
+
                                     item.classList.toggle(
                                         "active",
-                                        item === card
-                                    )
+                                        item === button
+                                    );
+
+                                }
                             );
 
 
@@ -1306,7 +1043,6 @@ function setupCategories() {
         );
 
 }
-
 
 
 /* ============================================================
@@ -1342,17 +1078,15 @@ function setupSearch() {
 }
 
 
-
 /* ============================================================
-   CONFIG OPTIONS
+   NETWORK / DEVICE SETTINGS
 ============================================================ */
 
-function setupConfigOptions() {
-
+function setupChoices() {
 
     document
         .querySelectorAll(
-            ".network-option"
+            ".network-choice"
         )
         .forEach(
             button => {
@@ -1367,7 +1101,7 @@ function setupConfigOptions() {
 
                         document
                             .querySelectorAll(
-                                ".network-option"
+                                ".network-choice"
                             )
                             .forEach(
                                 item =>
@@ -1382,7 +1116,7 @@ function setupConfigOptions() {
                         );
 
 
-                        updateAdaptiveEngine();
+                        applyMode();
 
                     }
                 );
@@ -1391,10 +1125,9 @@ function setupConfigOptions() {
         );
 
 
-
     document
         .querySelectorAll(
-            ".device-option"
+            ".device-choice"
         )
         .forEach(
             button => {
@@ -1409,7 +1142,7 @@ function setupConfigOptions() {
 
                         document
                             .querySelectorAll(
-                                ".device-option"
+                                ".device-choice"
                             )
                             .forEach(
                                 item =>
@@ -1424,7 +1157,7 @@ function setupConfigOptions() {
                         );
 
 
-                        updateAdaptiveEngine();
+                        applyMode();
 
                     }
                 );
@@ -1433,184 +1166,6 @@ function setupConfigOptions() {
         );
 
 }
-
-
-
-/* ============================================================
-   CONFIG MODAL
-============================================================ */
-
-function openConfig() {
-
-    updateAdaptiveEngine();
-
-    $("configOverlay")
-        ?.classList.add("active");
-
-}
-
-
-function closeConfig() {
-
-    $("configOverlay")
-        ?.classList.remove("active");
-
-}
-
-
-function setupConfig() {
-
-    $("configButton")
-        ?.addEventListener(
-            "click",
-            openConfig
-        );
-
-
-    $("heroConfigButton")
-        ?.addEventListener(
-            "click",
-            openConfig
-        );
-
-
-    $("statusConfigButton")
-        ?.addEventListener(
-            "click",
-            openConfig
-        );
-
-
-    $("closeConfig")
-        ?.addEventListener(
-            "click",
-            closeConfig
-        );
-
-
-    $("configOverlay")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                if (
-                    event.target ===
-                    $("configOverlay")
-                ) {
-
-                    closeConfig();
-
-                }
-
-            }
-        );
-
-}
-
-
-
-/* ============================================================
-   HIGH-END 3D POINTER EFFECT
-============================================================ */
-
-function setupHighEndHover() {
-
-    const grid =
-        $("productGrid");
-
-
-    if (!grid) {
-
-        return;
-
-    }
-
-
-    grid.addEventListener(
-        "pointermove",
-        event => {
-
-            if (
-                !document.body.classList.contains(
-                    "high-mode"
-                )
-            ) {
-
-                return;
-
-            }
-
-
-            const card =
-                event.target.closest(
-                    ".product"
-                );
-
-
-            if (!card) {
-
-                return;
-
-            }
-
-
-            const rect =
-                card.getBoundingClientRect();
-
-
-            const x =
-                event.clientX -
-                rect.left;
-
-
-            const y =
-                event.clientY -
-                rect.top;
-
-
-            const rotateY =
-                ((x / rect.width) - .5) * 7;
-
-
-            const rotateX =
-                ((y / rect.height) - .5) * -5;
-
-
-            card.style.transform =
-                `
-                translateY(-9px)
-                rotateX(${rotateX}deg)
-                rotateY(${rotateY}deg)
-                scale(1.02)
-                `;
-
-        }
-    );
-
-
-    grid.addEventListener(
-        "pointerleave",
-        event => {
-
-            const card =
-                event.target.closest(
-                    ".product"
-                );
-
-
-            if (card) {
-
-                card.style.transform =
-                    "";
-
-            }
-
-        },
-        true
-    );
-
-}
-
 
 
 /* ============================================================
@@ -1635,54 +1190,63 @@ function openProduct(id) {
 
 
     const image =
-        getAdaptiveImageURL(
+        imageUrl(
             product.image,
-            currentConfig ||
-            getModeConfig("MEDIUM")
+            currentConfig
         );
 
 
     $("productModalContent").innerHTML = `
 
-        <div class="product-modal-image">
+        <div class="modal-content">
 
             <img
                 src="${escapeHTML(image)}"
                 alt="${escapeHTML(product.name)}"
             >
 
-        </div>
+
+            <div class="modal-info">
+
+                <span class="product-category">
+                    ${escapeHTML(
+                        product.category
+                    )}
+                </span>
 
 
-        <div class="product-modal-info">
+                <h2>
+                    ${escapeHTML(
+                        product.name
+                    )}
+                </h2>
 
-            <span class="product-category">
-                ${escapeHTML(product.category)}
-            </span>
 
-            <h2>
-                ${escapeHTML(product.name)}
-            </h2>
+                <p>
+                    ${escapeHTML(
+                        product.description
+                    )}
+                </p>
 
-            <p>
-                ${escapeHTML(product.description)}
-            </p>
 
-            <p>
-                ⭐ ${product.rating}
-                · ${product.reviews} reviews
-            </p>
+                <p>
+                    ⭐ ${product.rating}
+                </p>
 
-            <strong class="modal-price">
-                ${money(product.price)}
-            </strong>
 
-            <button
-                class="primary-button"
-                data-modal-add="${product.id}"
-            >
-                Add to Cart
-            </button>
+                <strong class="modal-price">
+                    ${money(product.price)}
+                </strong>
+
+
+                <button
+                    class="primary"
+                    data-modal-add="${product.id}"
+                >
+                    Add to Cart
+                </button>
+
+            </div>
 
         </div>
 
@@ -1690,126 +1254,18 @@ function openProduct(id) {
 
 
     $("productOverlay")
-        ?.classList.add("active");
-
-}
-
-
-function closeProduct() {
-
-    $("productOverlay")
-        ?.classList.remove("active");
-
-}
-
-
-
-/* ============================================================
-   PRODUCT EVENTS
-============================================================ */
-
-function setupProductEvents() {
-
-    const grid =
-        $("productGrid");
-
-
-    if (!grid) {
-
-        return;
-
-    }
-
-
-    grid.addEventListener(
-        "click",
-        event => {
-
-            const add =
-                event.target.closest(
-                    "[data-add]"
-                );
-
-
-            if (add) {
-
-                addToCart(
-                    add.dataset.add
-                );
-
-                return;
-
-            }
-
-
-            const productImage =
-                event.target.closest(
-                    "[data-product]"
-                );
-
-
-            const productCard =
-                event.target.closest(
-                    ".product"
-                );
-
-
-            if (
-                productImage ||
-                productCard
-            ) {
-
-                const id =
-                    productCard?.dataset.id ||
-                    productImage?.dataset.product;
-
-
-                if (id) {
-
-                    openProduct(id);
-
-                }
-
-            }
-
-        }
-    );
-
-
-
-    $("productOverlay")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                if (
-                    event.target ===
-                    $("productOverlay")
-                ) {
-
-                    closeProduct();
-
-                }
-
-            }
-        );
-
-
-    $("closeProduct")
-        ?.addEventListener(
-            "click",
-            closeProduct
+        .classList.add(
+            "active"
         );
 
 }
-
 
 
 /* ============================================================
    CART
 ============================================================ */
 
-function addToCart(id) {
+function addCart(id) {
 
     const product =
         products.find(
@@ -1845,22 +1301,11 @@ function updateCart() {
         cart.length;
 
 
-    const container =
-        $("cartItems");
-
-
-    if (!container) {
-
-        return;
-
-    }
-
-
     if (!cart.length) {
 
-        container.innerHTML = `
+        $("cartItems").innerHTML = `
 
-            <div class="cart-empty">
+            <div class="empty">
 
                 🛒
 
@@ -1872,8 +1317,10 @@ function updateCart() {
 
         `;
 
+
         $("cartTotal").textContent =
             "₹0";
+
 
         return;
 
@@ -1883,12 +1330,14 @@ function updateCart() {
     let total = 0;
 
 
-    container.innerHTML =
+    $("cartItems").innerHTML =
         cart.map(
             (product, index) => {
 
                 total +=
-                    Number(product.price);
+                    Number(
+                        product.price
+                    );
 
 
                 return `
@@ -1897,7 +1346,7 @@ function updateCart() {
 
                     <img
                         src="${escapeHTML(
-                            getAdaptiveImageURL(
+                            imageUrl(
                                 product.image,
                                 currentConfig
                             )
@@ -1908,7 +1357,7 @@ function updateCart() {
                     >
 
 
-                    <div class="cart-item-info">
+                    <div>
 
                         <strong>
                             ${escapeHTML(
@@ -1926,7 +1375,7 @@ function updateCart() {
 
 
                     <button
-                        class="remove-cart"
+                        class="remove"
                         data-remove="${index}"
                     >
                         ×
@@ -1937,7 +1386,8 @@ function updateCart() {
                 `;
 
             }
-        ).join("");
+        )
+        .join("");
 
 
     $("cartTotal").textContent =
@@ -1946,34 +1396,152 @@ function updateCart() {
 }
 
 
+/* ============================================================
+   TOAST
+============================================================ */
+
+function showToast(message) {
+
+    const toast =
+        document.createElement(
+            "div"
+        );
+
+
+    toast.className =
+        "toast";
+
+
+    toast.textContent =
+        message;
+
+
+    $("toastWrap")
+        .appendChild(
+            toast
+        );
+
+
+    setTimeout(
+        () => toast.remove(),
+        2200
+    );
+
+}
+
+
+/* ============================================================
+   CONFIG MODAL
+============================================================ */
+
+function setupConfig() {
+
+    const openConfig = () => {
+
+        $("configOverlay")
+            .classList.add(
+                "active"
+            );
+
+        applyMode();
+
+    };
+
+
+    $("configButton")
+        .addEventListener(
+            "click",
+            openConfig
+        );
+
+
+    $("heroConfig")
+        .addEventListener(
+            "click",
+            openConfig
+        );
+
+
+    $("statusConfig")
+        .addEventListener(
+            "click",
+            openConfig
+        );
+
+
+    $("closeConfig")
+        .addEventListener(
+            "click",
+            () => {
+
+                $("configOverlay")
+                    .classList.remove(
+                        "active"
+                    );
+
+            }
+        );
+
+
+    $("configOverlay")
+        .addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target ===
+                    $("configOverlay")
+                ) {
+
+                    $("configOverlay")
+                        .classList.remove(
+                            "active"
+                        );
+
+                }
+
+            }
+        );
+
+}
+
+
+/* ============================================================
+   CART EVENTS
+============================================================ */
+
 function setupCart() {
 
     $("cartButton")
-        ?.addEventListener(
+        .addEventListener(
             "click",
             () => {
 
                 $("cartOverlay")
-                    ?.classList.add("active");
+                    .classList.add(
+                        "active"
+                    );
 
             }
         );
 
 
     $("closeCart")
-        ?.addEventListener(
+        .addEventListener(
             "click",
             () => {
 
                 $("cartOverlay")
-                    ?.classList.remove("active");
+                    .classList.remove(
+                        "active"
+                    );
 
             }
         );
 
 
     $("cartOverlay")
-        ?.addEventListener(
+        .addEventListener(
             "click",
             event => {
 
@@ -1983,7 +1551,9 @@ function setupCart() {
                 ) {
 
                     $("cartOverlay")
-                        .classList.remove("active");
+                        .classList.remove(
+                            "active"
+                        );
 
                 }
 
@@ -1992,7 +1562,7 @@ function setupCart() {
 
 
     $("cartItems")
-        ?.addEventListener(
+        .addEventListener(
             "click",
             event => {
 
@@ -2027,8 +1597,8 @@ function setupCart() {
         );
 
 
-    $("checkoutButton")
-        ?.addEventListener(
+    $("checkout")
+        .addEventListener(
             "click",
             () => {
 
@@ -2050,13 +1620,13 @@ function setupCart() {
 
 
                 $("cartOverlay")
-                    ?.classList.remove(
+                    .classList.remove(
                         "active"
                     );
 
 
                 showToast(
-                    "Demo order completed successfully!"
+                    "Demo checkout completed!"
                 );
 
             }
@@ -2065,105 +1635,168 @@ function setupCart() {
 }
 
 
-
 /* ============================================================
-   RECOMMENDATION EVENTS
+   PRODUCT EVENTS
 ============================================================ */
 
-document.addEventListener(
-    "click",
-    event => {
+function setupProductEvents() {
 
-        const button =
-            event.target.closest(
-                "[data-rec-add]"
-            );
+    $("productGrid")
+        .addEventListener(
+            "click",
+            event => {
 
-
-        if (button) {
-
-            addToCart(
-                button.dataset.recAdd
-            );
-
-        }
+                const addButton =
+                    event.target.closest(
+                        "[data-add]"
+                    );
 
 
-        const modalButton =
-            event.target.closest(
-                "[data-modal-add]"
-            );
+                if (addButton) {
+
+                    addCart(
+                        addButton.dataset.add
+                    );
+
+                    return;
+
+                }
 
 
-        if (modalButton) {
-
-            addToCart(
-                modalButton.dataset.modalAdd
-            );
-
-            closeProduct();
-
-        }
-
-    }
-);
+                const product =
+                    event.target.closest(
+                        ".product"
+                    );
 
 
+                if (product) {
 
-/* ============================================================
-   TOAST
-============================================================ */
+                    openProduct(
+                        product.dataset.id
+                    );
 
-function showToast(message) {
+                }
 
-    const container =
-        $("toastContainer");
-
-
-    if (!container) {
-
-        return;
-
-    }
-
-
-    const toast =
-        document.createElement(
-            "div"
+            }
         );
 
 
-    toast.className =
-        "toast";
+    $("recommendGrid")
+        .addEventListener(
+            "click",
+            event => {
+
+                const button =
+                    event.target.closest(
+                        "[data-rec]"
+                    );
 
 
-    toast.textContent =
-        message;
+                if (button) {
+
+                    addCart(
+                        button.dataset.rec
+                    );
+
+                }
+
+            }
+        );
 
 
-    container.appendChild(
-        toast
-    );
+    $("closeProduct")
+        .addEventListener(
+            "click",
+            () => {
+
+                $("productOverlay")
+                    .classList.remove(
+                        "active"
+                    );
+
+            }
+        );
 
 
-    setTimeout(
-        () => {
+    $("productOverlay")
+        .addEventListener(
+            "click",
+            event => {
 
-            toast.remove();
+                if (
+                    event.target ===
+                    $("productOverlay")
+                ) {
 
-        },
-        2200
+                    $("productOverlay")
+                        .classList.remove(
+                            "active"
+                        );
+
+                }
+
+            }
+        );
+
+
+    document.addEventListener(
+        "click",
+        event => {
+
+            const button =
+                event.target.closest(
+                    "[data-modal-add]"
+                );
+
+
+            if (button) {
+
+                addCart(
+                    button.dataset.modalAdd
+                );
+
+
+                $("productOverlay")
+                    .classList.remove(
+                        "active"
+                    );
+
+            }
+
+        }
     );
 
 }
 
 
-
 /* ============================================================
-   PERFORMANCE TELEMETRY
+   EXPLORE BUTTON
 ============================================================ */
 
-function setupPerformanceTelemetry() {
+function setupExplore() {
+
+    $("exploreButton")
+        .addEventListener(
+            "click",
+            () => {
+
+                $("products")
+                    .scrollIntoView({
+                        behavior:
+                            "smooth"
+                    });
+
+            }
+        );
+
+}
+
+
+/* ============================================================
+   PERFORMANCE MONITORING
+============================================================ */
+
+function setupPerformance() {
 
     if (
         !window.PerformanceObserver
@@ -2174,45 +1807,41 @@ function setupPerformanceTelemetry() {
     }
 
 
-
-    /* =========================
-       LCP
-    ========================= */
+    /*
+        LCP
+    */
 
     try {
 
-        const lcpObserver =
-            new PerformanceObserver(
-                list => {
+        new PerformanceObserver(
+            list => {
 
-                    const entries =
-                        list.getEntries();
-
-
-                    const last =
-                        entries[
-                            entries.length - 1
-                        ];
+                const entries =
+                    list.getEntries();
 
 
-                    if (
-                        last &&
-                        $("metricLCP")
-                    ) {
+                const last =
+                    entries[
+                        entries.length - 1
+                    ];
 
-                        $("metricLCP")
-                            .textContent =
-                            `${Math.round(
-                                last.startTime
-                            )} ms`;
 
-                    }
+                if (
+                    last &&
+                    $("metricLCP")
+                ) {
+
+                    $("metricLCP")
+                        .textContent =
+                        Math.round(
+                            last.startTime
+                        ) +
+                        " ms";
 
                 }
-            );
 
-
-        lcpObserver.observe({
+            }
+        ).observe({
 
             type:
                 "largest-contentful-paint",
@@ -2222,14 +1851,12 @@ function setupPerformanceTelemetry() {
 
         });
 
-    }
-    catch {}
+    } catch {}
 
 
-
-    /* =========================
-       CLS
-    ========================= */
+    /*
+        CLS
+    */
 
     try {
 
@@ -2237,41 +1864,37 @@ function setupPerformanceTelemetry() {
             0;
 
 
-        const clsObserver =
-            new PerformanceObserver(
-                list => {
+        new PerformanceObserver(
+            list => {
 
-                    list
-                        .getEntries()
-                        .forEach(
-                            entry => {
+                list
+                    .getEntries()
+                    .forEach(
+                        entry => {
 
-                                if (
-                                    !entry.hadRecentInput
-                                ) {
+                            if (
+                                !entry.hadRecentInput
+                            ) {
 
-                                    cls +=
-                                        entry.value;
-
-                                }
+                                cls +=
+                                    entry.value;
 
                             }
-                        );
+
+                        }
+                    );
 
 
-                    if ($("metricCLS")) {
+                if ($("metricCLS")) {
 
-                        $("metricCLS")
-                            .textContent =
-                            cls.toFixed(3);
-
-                    }
+                    $("metricCLS")
+                        .textContent =
+                        cls.toFixed(3);
 
                 }
-            );
 
-
-        clsObserver.observe({
+            }
+        ).observe({
 
             type:
                 "layout-shift",
@@ -2281,165 +1904,13 @@ function setupPerformanceTelemetry() {
 
         });
 
-    }
-    catch {}
-
-
-
-    /* =========================
-       INP
-    ========================= */
-
-    try {
-
-        const inpObserver =
-            new PerformanceObserver(
-                list => {
-
-                    const entries =
-                        list.getEntries();
-
-
-                    if (!entries.length) {
-
-                        return;
-
-                    }
-
-
-                    /*
-                       INP uses the longest
-                       interaction observed.
-                    */
-
-                    const longest =
-                        entries.reduce(
-                            (max, entry) =>
-                                Math.max(
-                                    max,
-                                    entry.duration
-                                ),
-                            0
-                        );
-
-
-                    if ($("metricINP")) {
-
-                        $("metricINP")
-                            .textContent =
-                            `${Math.round(
-                                longest
-                            )} ms`;
-
-                    }
-
-                }
-            );
-
-
-        inpObserver.observe({
-
-            type:
-                "event",
-
-            buffered:
-                true,
-
-            durationThreshold:
-                40
-
-        });
-
-    }
-    catch {}
-
-
-
-    /* =========================
-       NAVIGATION
-    ========================= */
-
-    window.addEventListener(
-        "load",
-        () => {
-
-            setTimeout(
-                () => {
-
-                    const navigation =
-                        performance.getEntriesByType(
-                            "navigation"
-                        )[0];
-
-
-                    if (navigation) {
-
-                        if ($("metricLoad")) {
-
-                            $("metricLoad")
-                                .textContent =
-                                `${Math.round(
-                                    navigation.loadEventEnd
-                                )} ms`;
-
-                        }
-
-                    }
-
-
-                    const resources =
-                        performance.getEntriesByType(
-                            "resource"
-                        );
-
-
-                    let totalBytes =
-                        0;
-
-
-                    resources.forEach(
-                        resource => {
-
-                            totalBytes +=
-                                resource.transferSize ||
-                                0;
-
-                        }
-                    );
-
-
-                    if ($("metricTransfer")) {
-
-                        $("metricTransfer")
-                            .textContent =
-                            `${(
-                                totalBytes / 1024
-                            ).toFixed(1)} KB`;
-
-                    }
-
-
-                    if ($("metricResources")) {
-
-                        $("metricResources")
-                            .textContent =
-                            resources.length;
-
-                    }
-
-                },
-                500
-            );
-
-        }
-    );
+    } catch {}
 
 }
 
 
-
 /* ============================================================
-   NETWORK LIVE CHANGES
+   NETWORK CHANGE LISTENERS
 ============================================================ */
 
 function setupNetworkListeners() {
@@ -2461,7 +1932,7 @@ function setupNetworkListeners() {
                     "AUTO"
                 ) {
 
-                    updateAdaptiveEngine();
+                    applyMode();
 
                 }
 
@@ -2480,7 +1951,7 @@ function setupNetworkListeners() {
                 "AUTO"
             ) {
 
-                updateAdaptiveEngine();
+                applyMode();
 
             }
 
@@ -2497,7 +1968,7 @@ function setupNetworkListeners() {
                 "AUTO"
             ) {
 
-                updateAdaptiveEngine();
+                applyMode();
 
             }
 
@@ -2507,113 +1978,83 @@ function setupNetworkListeners() {
 }
 
 
-
 /* ============================================================
-   ESCAPE
+   ESC KEY
 ============================================================ */
 
-document.addEventListener(
-    "keydown",
-    event => {
+function setupEscape() {
 
-        if (
-            event.key ===
-            "Escape"
-        ) {
+    document.addEventListener(
+        "keydown",
+        event => {
 
-            closeConfig();
+            if (
+                event.key ===
+                "Escape"
+            ) {
 
-            closeProduct();
+                $("configOverlay")
+                    .classList.remove(
+                        "active"
+                    );
 
-            $("cartOverlay")
-                ?.classList.remove(
-                    "active"
-                );
+                $("cartOverlay")
+                    .classList.remove(
+                        "active"
+                    );
 
-        }
-
-    }
-);
-
-
-
-/* ============================================================
-   EXPLORE BUTTON
-============================================================ */
-
-function setupExplore() {
-
-    $("exploreButton")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                $("products")
-                    ?.scrollIntoView({
-                        behavior:
-                            "smooth"
-                    });
+                $("productOverlay")
+                    .classList.remove(
+                        "active"
+                    );
 
             }
-        );
+
+        }
+    );
 
 }
-
 
 
 /* ============================================================
    INITIALIZATION
 ============================================================ */
 
-async function init() {
+function init() {
 
     setupConfig();
 
-    setupConfigOptions();
+    setupChoices();
 
     setupCategories();
 
     setupSearch();
 
-    setupProductEvents();
-
     setupCart();
 
-    setupHighEndHover();
-
-    setupNetworkListeners();
-
-    setupPerformanceTelemetry();
+    setupProductEvents();
 
     setupExplore();
 
+    setupNetworkListeners();
 
-    /*
-       Initial detection
-    */
+    setupEscape();
 
-    updateAdaptiveEngine();
-
-
-    /*
-       Load backend catalog
-       with local fallback.
-    */
-
-    await loadProducts();
+    setupPerformance();
 
 
     /*
-       Apply adaptive mode again
-       after catalog loads.
+        Initial adaptive decision
     */
 
-    updateAdaptiveEngine();
+    applyMode();
 
 
-    console.log(
-        "[AdaptiveWeb] AdaptiveShop initialized"
-    );
+    /*
+        Load backend products
+    */
+
+    loadProducts();
 
 }
 
