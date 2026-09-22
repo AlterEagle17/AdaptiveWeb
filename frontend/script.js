@@ -2,7 +2,7 @@
 
 /* ============================================================
    ADAPTIVESHOP
-   NETWORK + DEVICE ADAPTIVE ENGINE
+   NETWORK + DEVICE ADAPTIVE WEB APPLICATION
 ============================================================ */
 
 const API_BASE_URL =
@@ -13,8 +13,7 @@ const API_BASE_URL =
    HELPERS
 ============================================================ */
 
-const $ = id =>
-    document.getElementById(id);
+const $ = id => document.getElementById(id);
 
 
 function escapeHTML(value) {
@@ -42,28 +41,85 @@ function money(value) {
 ============================================================ */
 
 let products = [];
-
 let cart = [];
 
 let activeCategory = "ALL";
-
 let searchTerm = "";
 
 let networkSetting = "AUTO";
-
 let deviceSetting = "AUTO";
 
 let currentNetwork = null;
-
 let currentDevice = null;
-
 let currentConfig = null;
 
 let measuredBandwidth = null;
 
 
 /* ============================================================
+   PRODUCT IMAGE MAP
+   Backend products -> reliable image source
+============================================================ */
+
+const PRODUCT_IMAGES = {
+
+    "Nova X Pro 5G":
+        "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9",
+
+    "UltraBook Pro 16":
+        "https://images.unsplash.com/photo-1496181133206-80ce9b88a853",
+
+    "Sonic Pro Wireless ANC":
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
+
+    "Vision Watch Ultra":
+        "https://images.unsplash.com/photo-1523275335684-37898b6baf30",
+
+    "UltraTab Pro 12.9":
+        "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0",
+
+    "Apex Mechanical Keyboard":
+        "https://images.unsplash.com/photo-1587829741301-dc798b83add3",
+
+    "Titan 4K Gaming Display":
+        "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf",
+
+    "Pulse 360 Studio Speaker":
+        "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1",
+
+    "Alpha 7R Mirrorless Camera":
+        "https://images.unsplash.com/photo-1516035069371-29a1b244cc32",
+
+    "Aeroflex Wireless Mouse":
+        "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7"
+
+};
+
+
+/* ============================================================
+   CATEGORY FALLBACK IMAGES
+============================================================ */
+
+const CATEGORY_IMAGES = {
+
+    SMARTPHONES:
+        "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9",
+
+    LAPTOPS:
+        "https://images.unsplash.com/photo-1496181133206-80ce9b88a853",
+
+    AUDIO:
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
+
+    ACCESSORIES:
+        "https://images.unsplash.com/photo-1523275335684-37898b6baf30"
+
+};
+
+
+/* ============================================================
    FALLBACK PRODUCTS
+   Used if Spring Boot backend is unavailable
 ============================================================ */
 
 const fallbackProducts = [
@@ -79,7 +135,7 @@ const fallbackProducts = [
         description:
             "Flagship smartphone with a high-refresh display and powerful processor.",
         image:
-            "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=1000&q=85"
+            "https://images.unsplash.com/photo-1598327105666-5b89351aff97"
     },
 
     {
@@ -93,7 +149,7 @@ const fallbackProducts = [
         description:
             "Clean premium smartphone designed for photography and everyday performance.",
         image:
-            "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1000&q=85"
+            "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9"
     },
 
     {
@@ -107,7 +163,7 @@ const fallbackProducts = [
         description:
             "Powerful laptop for development, productivity and creative workloads.",
         image:
-            "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1000&q=85"
+            "https://images.unsplash.com/photo-1496181133206-80ce9b88a853"
     },
 
     {
@@ -121,7 +177,7 @@ const fallbackProducts = [
         description:
             "Slim and lightweight laptop designed for students and professionals.",
         image:
-            "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=1000&q=85"
+            "https://images.unsplash.com/photo-1531297484001-80022131f5a1"
     },
 
     {
@@ -135,7 +191,7 @@ const fallbackProducts = [
         description:
             "Premium wireless headphones with immersive audio and long battery life.",
         image:
-            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=85"
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e"
     },
 
     {
@@ -149,7 +205,7 @@ const fallbackProducts = [
         description:
             "Compact wireless earbuds with clear sound and active noise cancellation.",
         image:
-            "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=1000&q=85"
+            "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1"
     },
 
     {
@@ -163,7 +219,7 @@ const fallbackProducts = [
         description:
             "Smart wearable with fitness tracking, notifications and health insights.",
         image:
-            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=85"
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30"
     },
 
     {
@@ -177,14 +233,132 @@ const fallbackProducts = [
         description:
             "Compact multi-device charging dock for your everyday setup.",
         image:
-            "https://images.unsplash.com/photo-1609592424984-4b8b1b5c7b8d?auto=format&fit=crop&w=1000&q=85"
+            "https://images.unsplash.com/photo-1609592424984-4b8b1b5c7b8d"
     }
 
 ];
 
 
 /* ============================================================
-   NETWORK DETECTION
+   IMAGE RESOLVER
+============================================================ */
+
+function resolveProductImage(product) {
+
+    if (!product) {
+        return "";
+    }
+
+    const name =
+        String(product.name || "").trim();
+
+    const category =
+        String(product.category || "")
+            .trim()
+            .toUpperCase();
+
+
+    /*
+        First priority:
+        Exact backend product name
+    */
+
+    if (PRODUCT_IMAGES[name]) {
+
+        return PRODUCT_IMAGES[name];
+
+    }
+
+
+    /*
+        Second priority:
+        Backend image URL
+    */
+
+    if (
+        product.image &&
+        String(product.image).trim()
+    ) {
+
+        return String(product.image).trim();
+
+    }
+
+
+    /*
+        Third priority:
+        Category fallback
+    */
+
+    return CATEGORY_IMAGES[category] || CATEGORY_IMAGES.ACCESSORIES;
+
+}
+
+
+/* ============================================================
+   ADAPTIVE IMAGE URL
+============================================================ */
+
+function getAdaptiveImageURL(
+    url,
+    config
+) {
+
+    if (!url) {
+        return "";
+    }
+
+
+    const width =
+        config?.imageWidth || 600;
+
+    const quality =
+        config?.imageQuality || 65;
+
+
+    /*
+        Remove existing query parameters.
+        Then create a fresh optimized URL.
+    */
+
+    const baseURL =
+        String(url).split("?")[0];
+
+
+    return (
+        `${baseURL}` +
+        `?auto=format` +
+        `&fit=crop` +
+        `&w=${width}` +
+        `&q=${quality}`
+    );
+
+}
+
+
+/* ============================================================
+   FINAL IMAGE URL
+============================================================ */
+
+function getProductImage(
+    product,
+    config
+) {
+
+    const source =
+        resolveProductImage(product);
+
+
+    return getAdaptiveImageURL(
+        source,
+        config
+    );
+
+}
+
+
+/* ============================================================
+   NETWORK CONNECTION
 ============================================================ */
 
 function getConnection() {
@@ -199,26 +373,36 @@ function getConnection() {
 }
 
 
+/* ============================================================
+   NETWORK DETECTION
+============================================================ */
+
 function detectNetwork() {
 
-    const connection = getConnection();
+    const connection =
+        getConnection();
+
 
     const online =
         navigator.onLine !== false;
 
+
     const effectiveType =
         connection?.effectiveType ||
         "unknown";
+
 
     const downlink =
         typeof connection?.downlink === "number"
             ? connection.downlink
             : null;
 
+
     const rtt =
         typeof connection?.rtt === "number"
             ? connection.rtt
             : null;
+
 
     const saveData =
         Boolean(connection?.saveData);
@@ -232,6 +416,10 @@ function detectNetwork() {
     let level = "MEDIUM";
 
 
+    /*
+        LOW NETWORK
+    */
+
     if (
         !online ||
         saveData ||
@@ -244,6 +432,12 @@ function detectNetwork() {
         level = "LOW";
 
     }
+
+
+    /*
+        HIGH NETWORK
+    */
+
     else if (
         speed !== null &&
         speed >= 5 &&
@@ -256,6 +450,7 @@ function detectNetwork() {
 
 
     return {
+
         level,
         online,
         effectiveType,
@@ -263,13 +458,14 @@ function detectNetwork() {
         rtt,
         saveData,
         measuredBandwidth
+
     };
 
 }
 
 
 /* ============================================================
-   BANDWIDTH TEST
+   ACTIVE BANDWIDTH TEST
 ============================================================ */
 
 async function measureBandwidth() {
@@ -278,6 +474,7 @@ async function measureBandwidth() {
 
         const start =
             performance.now();
+
 
         const response =
             await fetch(
@@ -288,8 +485,13 @@ async function measureBandwidth() {
                 }
             );
 
+
         if (!response.ok) {
-            throw new Error("Speed test failed");
+
+            throw new Error(
+                "Speed test failed"
+            );
+
         }
 
 
@@ -298,7 +500,8 @@ async function measureBandwidth() {
 
 
         const seconds =
-            (performance.now() - start) / 1000;
+            (performance.now() - start) /
+            1000;
 
 
         if (seconds > 0) {
@@ -334,6 +537,7 @@ function detectDevice() {
     const cores =
         navigator.hardwareConcurrency || 4;
 
+
     const memory =
         navigator.deviceMemory || null;
 
@@ -341,17 +545,33 @@ function detectDevice() {
     let level = "MEDIUM";
 
 
+    /*
+        HIGH DEVICE
+    */
+
     if (
         cores >= 8 &&
-        (memory === null || memory >= 8)
+        (
+            memory === null ||
+            memory >= 8
+        )
     ) {
 
         level = "HIGH";
 
     }
+
+
+    /*
+        LOW DEVICE
+    */
+
     else if (
         cores < 4 ||
-        (memory !== null && memory < 4)
+        (
+            memory !== null &&
+            memory < 4
+        )
     ) {
 
         level = "LOW";
@@ -359,24 +579,26 @@ function detectDevice() {
     }
 
 
-    let platform =
+    const platform =
         navigator.userAgentData?.platform ||
         navigator.platform ||
         "Unknown";
 
 
     return {
+
         level,
         cores,
         memory,
         platform
+
     };
 
 }
 
 
 /* ============================================================
-   ADAPTIVE DECISION
+   ADAPTIVE DECISION ENGINE
 ============================================================ */
 
 function calculateAdaptiveMode(
@@ -385,8 +607,10 @@ function calculateAdaptiveMode(
 ) {
 
     /*
-        LOW + anything
-        = LOW
+        WEAK LINK RULE
+
+        If either network or device is LOW,
+        use LOW delivery.
     */
 
     if (
@@ -424,7 +648,6 @@ function calculateAdaptiveMode(
 
     /*
         HIGH + HIGH
-        = HIGH
     */
 
     if (
@@ -461,8 +684,7 @@ function calculateAdaptiveMode(
 
 
     /*
-        Everything else
-        = MEDIUM
+        EVERYTHING ELSE
     */
 
     return {
@@ -494,50 +716,6 @@ function calculateAdaptiveMode(
 
 
 /* ============================================================
-   IMAGE ADAPTATION
-============================================================ */
-
-function getAdaptiveImageURL(
-    url,
-    config
-) {
-
-    if (!url) {
-        return "";
-    }
-
-
-    let result = url;
-
-
-    if (/w=\d+/i.test(result)) {
-
-        result =
-            result.replace(
-                /w=\d+/i,
-                `w=${config.imageWidth}`
-            );
-
-    }
-
-
-    if (/q=\d+/i.test(result)) {
-
-        result =
-            result.replace(
-                /q=\d+/i,
-                `q=${config.imageQuality}`
-            );
-
-    }
-
-
-    return result;
-
-}
-
-
-/* ============================================================
    PREFETCH
 ============================================================ */
 
@@ -546,8 +724,11 @@ function applyPrefetch(config) {
     const old =
         $("adaptivePrefetch");
 
+
     if (old) {
+
         old.remove();
+
     }
 
 
@@ -561,6 +742,10 @@ function applyPrefetch(config) {
     }
 
 
+    /*
+        Prefetch first product image
+    */
+
     const first =
         products[0];
 
@@ -572,26 +757,31 @@ function applyPrefetch(config) {
     link.id =
         "adaptivePrefetch";
 
+
     link.rel =
         "prefetch";
+
 
     link.as =
         "image";
 
+
     link.href =
-        getAdaptiveImageURL(
-            first.image,
+        getProductImage(
+            first,
             config
         );
 
 
-    document.head.appendChild(link);
+    document.head.appendChild(
+        link
+    );
 
 }
 
 
 /* ============================================================
-   APPLY VISUAL MODE
+   VISUAL MODE
 ============================================================ */
 
 function applyVisualMode(config) {
@@ -604,7 +794,8 @@ function applyVisualMode(config) {
 
 
     document.body.classList.add(
-        config.tier.toLowerCase() + "-mode"
+        config.tier.toLowerCase() +
+        "-mode"
     );
 
 
@@ -625,7 +816,7 @@ function applyVisualMode(config) {
 
 
 /* ============================================================
-   CONFIG PANEL UPDATE
+   CONFIG PANEL
 ============================================================ */
 
 function updateConfigPanel(
@@ -741,7 +932,7 @@ function updateConfigPanel(
 
 
 /* ============================================================
-   CURRENT CONDITIONS
+   SELECTED CONDITIONS
 ============================================================ */
 
 function getSelectedNetwork() {
@@ -762,10 +953,15 @@ function getSelectedDevice() {
 }
 
 
+/* ============================================================
+   UPDATE ADAPTIVE ENGINE
+============================================================ */
+
 function updateAdaptiveEngine() {
 
     currentNetwork =
         detectNetwork();
+
 
     currentDevice =
         detectDevice();
@@ -773,6 +969,7 @@ function updateAdaptiveEngine() {
 
     const network =
         getSelectedNetwork();
+
 
     const device =
         getSelectedDevice();
@@ -797,6 +994,7 @@ function updateAdaptiveEngine() {
 
     renderProducts();
 
+
     renderRecommendations();
 
 
@@ -806,6 +1004,54 @@ function updateAdaptiveEngine() {
         currentConfig
     );
 
+
+    updateCart();
+
+}
+
+
+/* ============================================================
+   FILTER PRODUCTS
+============================================================ */
+
+function getFilteredProducts() {
+
+    return products.filter(
+        product => {
+
+            const categoryMatch =
+                activeCategory === "ALL" ||
+                String(
+                    product.category
+                ).toUpperCase() ===
+                activeCategory;
+
+
+            const text =
+                (
+                    product.name +
+                    " " +
+                    product.category +
+                    " " +
+                    product.description
+                ).toLowerCase();
+
+
+            const searchMatch =
+                !searchTerm ||
+                text.includes(
+                    searchTerm.toLowerCase()
+                );
+
+
+            return (
+                categoryMatch &&
+                searchMatch
+            );
+
+        }
+    );
+
 }
 
 
@@ -813,50 +1059,16 @@ function updateAdaptiveEngine() {
    PRODUCT RENDERING
 ============================================================ */
 
-function getFilteredProducts() {
-
-    return products.filter(product => {
-
-        const categoryMatch =
-            activeCategory === "ALL" ||
-            String(product.category).toUpperCase() ===
-            activeCategory;
-
-
-        const text =
-            (
-                product.name +
-                " " +
-                product.category +
-                " " +
-                product.description
-            ).toLowerCase();
-
-
-        const searchMatch =
-            !searchTerm ||
-            text.includes(
-                searchTerm.toLowerCase()
-            );
-
-
-        return (
-            categoryMatch &&
-            searchMatch
-        );
-
-    });
-
-}
-
-
 function renderProducts() {
 
     const grid =
         $("productGrid");
 
+
     if (!grid) {
+
         return;
+
     }
 
 
@@ -865,88 +1077,103 @@ function renderProducts() {
 
 
     grid.innerHTML =
-        list.map(product => {
+        list.map(
+            product => {
 
-            const image =
-                getAdaptiveImageURL(
-                    product.image,
-                    currentConfig
-                );
+                const image =
+                    getProductImage(
+                        product,
+                        currentConfig
+                    );
 
 
-            return `
+                return `
 
-                <article
-                    class="product"
-                    data-id="${product.id}"
-                >
-
-                    <div
-                        class="product-image"
-                        data-product="${product.id}"
+                    <article
+                        class="product"
+                        data-id="${escapeHTML(product.id)}"
                     >
 
-                        <img
-                            src="${escapeHTML(image)}"
-                            alt="${escapeHTML(product.name)}"
-                            loading="lazy"
-                            onerror="this.onerror=null;this.src='https://placehold.co/1000x700/eef5ff/2874f0?text=AdaptiveShop';"
+                        <div
+                            class="product-image"
+                            data-product="${escapeHTML(product.id)}"
                         >
 
-                        <span class="product-badge">
-                            ${escapeHTML(product.badge || "FEATURED")}
-                        </span>
-
-                    </div>
-
-
-                    <div class="product-info">
-
-                        <div class="product-top">
-
-                            <span class="product-category">
-                                ${escapeHTML(product.category)}
-                            </span>
-
-                            <span class="product-rating">
-                                ⭐ ${product.rating}
-                            </span>
-
-                        </div>
-
-
-                        <h3>
-                            ${escapeHTML(product.name)}
-                        </h3>
-
-
-                        <p class="product-description">
-                            ${escapeHTML(product.description)}
-                        </p>
-
-
-                        <div class="product-bottom">
-
-                            <strong class="product-price">
-                                ${money(product.price)}
-                            </strong>
-
-                            <button
-                                class="add-cart"
-                                data-add="${product.id}"
+                            <img
+                                src="${escapeHTML(image)}"
+                                alt="${escapeHTML(product.name)}"
+                                loading="lazy"
+                                decoding="async"
                             >
-                                Add to Cart
-                            </button>
+
+                            <span class="product-badge">
+                                ${escapeHTML(
+                                    product.badge ||
+                                    "FEATURED"
+                                )}
+                            </span>
 
                         </div>
 
-                    </div>
 
-                </article>
+                        <div class="product-info">
 
-            `;
+                            <div class="product-top">
 
-        }).join("");
+                                <span class="product-category">
+                                    ${escapeHTML(
+                                        product.category
+                                    )}
+                                </span>
+
+                                <span class="product-rating">
+                                    ⭐ ${escapeHTML(
+                                        product.rating
+                                    )}
+                                </span>
+
+                            </div>
+
+
+                            <h3>
+                                ${escapeHTML(
+                                    product.name
+                                )}
+                            </h3>
+
+
+                            <p class="product-description">
+                                ${escapeHTML(
+                                    product.description
+                                )}
+                            </p>
+
+
+                            <div class="product-bottom">
+
+                                <strong class="product-price">
+                                    ${money(product.price)}
+                                </strong>
+
+                                <button
+                                    class="add-cart"
+                                    data-add="${escapeHTML(
+                                        product.id
+                                    )}"
+                                >
+                                    Add to Cart
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                `;
+
+            }
+        ).join("");
 
 
     if ($("productCount")) {
@@ -978,13 +1205,17 @@ function renderRecommendations() {
     const grid =
         $("recommendationGrid");
 
+
     if (!grid) {
+
         return;
+
     }
 
 
     if (
-        currentConfig?.recommendations === "OFF"
+        currentConfig?.recommendations ===
+        "OFF"
     ) {
 
         grid.innerHTML = "";
@@ -1002,56 +1233,69 @@ function renderRecommendations() {
 
     grid.innerHTML =
         products
-            .slice(0,count)
-            .map(product => {
+            .slice(0, count)
+            .map(
+                product => {
 
-                const image =
-                    getAdaptiveImageURL(
-                        product.image,
-                        currentConfig
-                    );
+                    const image =
+                        getProductImage(
+                            product,
+                            currentConfig
+                        );
 
 
-                return `
+                    return `
 
-                    <div class="rec-card">
+                        <div class="rec-card">
 
-                        <img
-                            src="${escapeHTML(image)}"
-                            alt="${escapeHTML(product.name)}"
-                            loading="lazy"
-                        >
+                            <img
+                                src="${escapeHTML(image)}"
+                                alt="${escapeHTML(
+                                    product.name
+                                )}"
+                                loading="lazy"
+                                decoding="async"
+                            >
 
-                        <div class="rec-info">
+                            <div class="rec-info">
 
-                            <strong>
-                                ${escapeHTML(product.name)}
-                            </strong>
+                                <strong>
+                                    ${escapeHTML(
+                                        product.name
+                                    )}
+                                </strong>
 
-                            <span>
-                                ${money(product.price)}
-                            </span>
+                                <span>
+                                    ${money(
+                                        product.price
+                                    )}
+                                </span>
+
+                            </div>
+
+
+                            <button
+                                class="rec-btn"
+                                data-rec-add="${escapeHTML(
+                                    product.id
+                                )}"
+                            >
+                                Add
+                            </button>
 
                         </div>
 
-                        <button
-                            class="rec-btn"
-                            data-rec-add="${product.id}"
-                        >
-                            Add
-                        </button>
+                    `;
 
-                    </div>
-
-                `;
-
-            }).join("");
+                }
+            )
+            .join("");
 
 }
 
 
 /* ============================================================
-   BACKEND
+   BACKEND LOAD
 ============================================================ */
 
 async function loadProducts() {
@@ -1069,7 +1313,11 @@ async function loadProducts() {
 
 
         if (!response.ok) {
-            throw new Error("Backend unavailable");
+
+            throw new Error(
+                "Backend unavailable"
+            );
+
         }
 
 
@@ -1077,7 +1325,10 @@ async function loadProducts() {
             await response.json();
 
 
-        if (Array.isArray(data) && data.length) {
+        if (
+            Array.isArray(data) &&
+            data.length
+        ) {
 
             products =
                 data;
@@ -1112,46 +1363,50 @@ async function loadProducts() {
 
 
 /* ============================================================
-   CATEGORY
+   CATEGORIES
 ============================================================ */
 
 function setupCategories() {
 
     document
-        .querySelectorAll(".category-card")
-        .forEach(button => {
+        .querySelectorAll(
+            ".category-card"
+        )
+        .forEach(
+            button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+                button.addEventListener(
+                    "click",
+                    () => {
 
-                    document
-                        .querySelectorAll(
-                            ".category-card"
-                        )
-                        .forEach(
-                            item =>
-                                item.classList.remove(
-                                    "active"
-                                )
+                        document
+                            .querySelectorAll(
+                                ".category-card"
+                            )
+                            .forEach(
+                                item =>
+                                    item.classList.remove(
+                                        "active"
+                                    )
+                            );
+
+
+                        button.classList.add(
+                            "active"
                         );
 
 
-                    button.classList.add(
-                        "active"
-                    );
+                        activeCategory =
+                            button.dataset.category;
 
 
-                    activeCategory =
-                        button.dataset.category;
+                        renderProducts();
 
+                    }
+                );
 
-                    renderProducts();
-
-                }
-            );
-
-        });
+            }
+        );
 
 }
 
@@ -1170,6 +1425,7 @@ function setupSearch() {
                 searchTerm =
                     event.target.value.trim();
 
+
                 renderProducts();
 
             }
@@ -1185,91 +1441,102 @@ function setupSearch() {
 function setupConfigOptions() {
 
     document
-        .querySelectorAll(".network-option")
-        .forEach(button => {
+        .querySelectorAll(
+            ".network-option"
+        )
+        .forEach(
+            button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+                button.addEventListener(
+                    "click",
+                    () => {
 
-                    document
-                        .querySelectorAll(
-                            ".network-option"
-                        )
-                        .forEach(
-                            item =>
-                                item.classList.remove(
-                                    "active"
-                                )
+                        document
+                            .querySelectorAll(
+                                ".network-option"
+                            )
+                            .forEach(
+                                item =>
+                                    item.classList.remove(
+                                        "active"
+                                    )
+                            );
+
+
+                        button.classList.add(
+                            "active"
                         );
 
 
-                    button.classList.add(
-                        "active"
-                    );
+                        networkSetting =
+                            button.dataset.value;
 
 
-                    networkSetting =
-                        button.dataset.value;
+                        updateAdaptiveEngine();
 
+                    }
+                );
 
-                    updateAdaptiveEngine();
-
-                }
-            );
-
-        });
+            }
+        );
 
 
     document
-        .querySelectorAll(".device-option")
-        .forEach(button => {
+        .querySelectorAll(
+            ".device-option"
+        )
+        .forEach(
+            button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+                button.addEventListener(
+                    "click",
+                    () => {
 
-                    document
-                        .querySelectorAll(
-                            ".device-option"
-                        )
-                        .forEach(
-                            item =>
-                                item.classList.remove(
-                                    "active"
-                                )
+                        document
+                            .querySelectorAll(
+                                ".device-option"
+                            )
+                            .forEach(
+                                item =>
+                                    item.classList.remove(
+                                        "active"
+                                    )
+                            );
+
+
+                        button.classList.add(
+                            "active"
                         );
 
 
-                    button.classList.add(
-                        "active"
-                    );
+                        deviceSetting =
+                            button.dataset.value;
 
 
-                    deviceSetting =
-                        button.dataset.value;
+                        updateAdaptiveEngine();
 
+                    }
+                );
 
-                    updateAdaptiveEngine();
-
-                }
-            );
-
-        });
+            }
+        );
 
 }
 
 
 /* ============================================================
-   CONFIG
+   CONFIG MODAL
 ============================================================ */
 
 function openConfig() {
 
     updateAdaptiveEngine();
 
+
     $("configOverlay")
-        ?.classList.add("active");
+        ?.classList.add(
+            "active"
+        );
 
 }
 
@@ -1277,7 +1544,9 @@ function openConfig() {
 function closeConfig() {
 
     $("configOverlay")
-        ?.classList.remove("active");
+        ?.classList.remove(
+            "active"
+        );
 
 }
 
@@ -1347,13 +1616,15 @@ function openProduct(id) {
 
 
     if (!product) {
+
         return;
+
     }
 
 
     const image =
-        getAdaptiveImageURL(
-            product.image,
+        getProductImage(
+            product,
             currentConfig
         );
 
@@ -1366,7 +1637,10 @@ function openProduct(id) {
 
                 <img
                     src="${escapeHTML(image)}"
-                    alt="${escapeHTML(product.name)}"
+                    alt="${escapeHTML(
+                        product.name
+                    )}"
+                    decoding="async"
                 >
 
             </div>
@@ -1375,29 +1649,49 @@ function openProduct(id) {
             <div class="product-modal-info">
 
                 <span class="product-category">
-                    ${escapeHTML(product.category)}
+                    ${escapeHTML(
+                        product.category
+                    )}
                 </span>
 
+
                 <h2>
-                    ${escapeHTML(product.name)}
+                    ${escapeHTML(
+                        product.name
+                    )}
                 </h2>
 
-                <p>
-                    ${escapeHTML(product.description)}
-                </p>
 
                 <p>
-                    ⭐ ${product.rating}
-                    · ${product.reviews} reviews
+                    ${escapeHTML(
+                        product.description
+                    )}
                 </p>
+
+
+                <p>
+                    ⭐ ${escapeHTML(
+                        product.rating
+                    )}
+
+                    ·
+
+                    ${escapeHTML(
+                        product.reviews
+                    )} reviews
+                </p>
+
 
                 <strong class="modal-price">
                     ${money(product.price)}
                 </strong>
 
+
                 <button
                     class="primary-button"
-                    data-modal-add="${product.id}"
+                    data-modal-add="${escapeHTML(
+                        product.id
+                    )}"
                 >
                     Add to Cart
                 </button>
@@ -1410,7 +1704,9 @@ function openProduct(id) {
 
 
     $("productOverlay")
-        ?.classList.add("active");
+        ?.classList.add(
+            "active"
+        );
 
 }
 
@@ -1418,10 +1714,16 @@ function openProduct(id) {
 function closeProduct() {
 
     $("productOverlay")
-        ?.classList.remove("active");
+        ?.classList.remove(
+            "active"
+        );
 
 }
 
+
+/* ============================================================
+   PRODUCT EVENTS
+============================================================ */
 
 function setupProductEvents() {
 
@@ -1507,13 +1809,17 @@ function addToCart(id) {
 
 
     if (!product) {
+
         return;
+
     }
 
 
     cart.push(product);
 
+
     updateCart();
+
 
     showToast(
         `${product.name} added to cart`
@@ -1522,10 +1828,18 @@ function addToCart(id) {
 }
 
 
+/* ============================================================
+   UPDATE CART
+============================================================ */
+
 function updateCart() {
 
-    $("cartCount").textContent =
-        cart.length;
+    if ($("cartCount")) {
+
+        $("cartCount").textContent =
+            cart.length;
+
+    }
 
 
     const container =
@@ -1533,7 +1847,9 @@ function updateCart() {
 
 
     if (!container) {
+
         return;
+
     }
 
 
@@ -1554,8 +1870,12 @@ function updateCart() {
         `;
 
 
-        $("cartTotal").textContent =
-            "₹0";
+        if ($("cartTotal")) {
+
+            $("cartTotal").textContent =
+                "₹0";
+
+        }
 
 
         return;
@@ -1567,61 +1887,85 @@ function updateCart() {
 
 
     container.innerHTML =
-        cart.map(
-            (product,index) => {
+        cart
+            .map(
+                (product, index) => {
 
-                total +=
-                    Number(product.price);
-
-
-                const image =
-                    getAdaptiveImageURL(
-                        product.image,
-                        currentConfig
-                    );
+                    total +=
+                        Number(
+                            product.price
+                        );
 
 
-                return `
+                    const image =
+                        getProductImage(
+                            product,
+                            currentConfig
+                        );
 
-                    <div class="cart-item">
 
-                        <img
-                            src="${escapeHTML(image)}"
-                            alt="${escapeHTML(product.name)}"
-                        >
+                    return `
 
-                        <div class="cart-item-info">
+                        <div class="cart-item">
 
-                            <strong>
-                                ${escapeHTML(product.name)}
-                            </strong>
+                            <img
+                                src="${escapeHTML(
+                                    image
+                                )}"
+                                alt="${escapeHTML(
+                                    product.name
+                                )}"
+                                loading="lazy"
+                                decoding="async"
+                            >
 
-                            <span>
-                                ${money(product.price)}
-                            </span>
+
+                            <div class="cart-item-info">
+
+                                <strong>
+                                    ${escapeHTML(
+                                        product.name
+                                    )}
+                                </strong>
+
+                                <span>
+                                    ${money(
+                                        product.price
+                                    )}
+                                </span>
+
+                            </div>
+
+
+                            <button
+                                class="remove-cart"
+                                data-remove="${index}"
+                            >
+                                ×
+                            </button>
 
                         </div>
 
-                        <button
-                            class="remove-cart"
-                            data-remove="${index}"
-                        >
-                            ×
-                        </button>
+                    `;
 
-                    </div>
-
-                `;
-
-            }
-        ).join("");
+                }
+            )
+            .join("");
 
 
-    $("cartTotal").textContent =
-        money(total);
+    if ($("cartTotal")) {
+
+        $("cartTotal").textContent =
+            money(total);
+
+    }
 
 }
 
+
+/* ============================================================
+   CART EVENTS
+============================================================ */
 
 function setupCart() {
 
@@ -1631,7 +1975,9 @@ function setupCart() {
             () => {
 
                 $("cartOverlay")
-                    ?.classList.add("active");
+                    ?.classList.add(
+                        "active"
+                    );
 
             }
         );
@@ -1643,7 +1989,9 @@ function setupCart() {
             () => {
 
                 $("cartOverlay")
-                    ?.classList.remove("active");
+                    ?.classList.remove(
+                        "active"
+                    );
 
             }
         );
@@ -1660,7 +2008,9 @@ function setupCart() {
                 ) {
 
                     $("cartOverlay")
-                        .classList.remove("active");
+                        .classList.remove(
+                            "active"
+                        );
 
                 }
 
@@ -1680,12 +2030,16 @@ function setupCart() {
 
 
                 if (!button) {
+
                     return;
+
                 }
 
 
                 cart.splice(
-                    Number(button.dataset.remove),
+                    Number(
+                        button.dataset.remove
+                    ),
                     1
                 );
 
@@ -1714,6 +2068,7 @@ function setupCart() {
 
                 cart = [];
 
+
                 updateCart();
 
 
@@ -1734,7 +2089,7 @@ function setupCart() {
 
 
 /* ============================================================
-   RECOMMENDATION + MODAL EVENTS
+   RECOMMENDATION + MODAL BUTTONS
 ============================================================ */
 
 document.addEventListener(
@@ -1768,6 +2123,7 @@ document.addEventListener(
                 modalAdd.dataset.modalAdd
             );
 
+
             closeProduct();
 
         }
@@ -1777,7 +2133,7 @@ document.addEventListener(
 
 
 /* ============================================================
-   HIGH MODE POINTER TILT
+   HIGH MODE 3D TILT
 ============================================================ */
 
 function setupHighModeTilt() {
@@ -1787,7 +2143,9 @@ function setupHighModeTilt() {
 
 
     if (!grid) {
+
         return;
+
     }
 
 
@@ -1813,7 +2171,9 @@ function setupHighModeTilt() {
 
 
             if (!card) {
+
                 return;
+
             }
 
 
@@ -1822,21 +2182,27 @@ function setupHighModeTilt() {
 
 
             const x =
-                (event.clientX - rect.left) /
+                (
+                    event.clientX -
+                    rect.left
+                ) /
                 rect.width;
 
 
             const y =
-                (event.clientY - rect.top) /
+                (
+                    event.clientY -
+                    rect.top
+                ) /
                 rect.height;
 
 
             const rotateY =
-                (x - .5) * 7;
+                (x - 0.5) * 7;
 
 
             const rotateX =
-                (y - .5) * -5;
+                (y - 0.5) * -5;
 
 
             card.style.transform =
@@ -1890,12 +2256,16 @@ function showToast(message) {
 
 
     if (!container) {
+
         return;
+
     }
 
 
     const toast =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     toast.className =
@@ -1925,12 +2295,18 @@ function showToast(message) {
 
 function setupPerformanceTelemetry() {
 
-    if (!window.PerformanceObserver) {
+    if (
+        !window.PerformanceObserver
+    ) {
+
         return;
+
     }
 
 
-    /* LCP */
+    /* ========================================================
+       LCP
+    ======================================================== */
 
     try {
 
@@ -1966,17 +2342,22 @@ function setupPerformanceTelemetry() {
 
 
         observer.observe({
+
             type:
                 "largest-contentful-paint",
+
             buffered:
                 true
+
         });
 
     }
     catch {}
 
 
-    /* CLS */
+    /* ========================================================
+       CLS
+    ======================================================== */
 
     try {
 
@@ -1987,19 +2368,22 @@ function setupPerformanceTelemetry() {
             new PerformanceObserver(
                 list => {
 
-                    list.getEntries()
-                        .forEach(entry => {
+                    list
+                        .getEntries()
+                        .forEach(
+                            entry => {
 
-                            if (
-                                !entry.hadRecentInput
-                            ) {
+                                if (
+                                    !entry.hadRecentInput
+                                ) {
 
-                                cls +=
-                                    entry.value;
+                                    cls +=
+                                        entry.value;
+
+                                }
 
                             }
-
-                        });
+                        );
 
 
                     if ($("metricCLS")) {
@@ -2015,20 +2399,22 @@ function setupPerformanceTelemetry() {
 
 
         observer.observe({
+
             type:
                 "layout-shift",
+
             buffered:
                 true
+
         });
 
     }
     catch {}
 
 
-    /*
-        INP-style event measurement.
-        Uses PerformanceEventTiming entries.
-    */
+    /* ========================================================
+       INP STYLE INTERACTION MEASUREMENT
+    ======================================================== */
 
     try {
 
@@ -2039,16 +2425,19 @@ function setupPerformanceTelemetry() {
             new PerformanceObserver(
                 list => {
 
-                    list.getEntries()
-                        .forEach(entry => {
+                    list
+                        .getEntries()
+                        .forEach(
+                            entry => {
 
-                            longestInteraction =
-                                Math.max(
-                                    longestInteraction,
-                                    entry.duration || 0
-                                );
+                                longestInteraction =
+                                    Math.max(
+                                        longestInteraction,
+                                        entry.duration || 0
+                                    );
 
-                        });
+                            }
+                        );
 
 
                     if (
@@ -2069,19 +2458,25 @@ function setupPerformanceTelemetry() {
 
 
         observer.observe({
+
             type:
                 "event",
+
             buffered:
                 true,
+
             durationThreshold:
                 40
+
         });
 
     }
     catch {}
 
 
-    /* Navigation + Resources */
+    /* ========================================================
+       NAVIGATION + RESOURCE DATA
+    ======================================================== */
 
     window.addEventListener(
         "load",
@@ -2132,7 +2527,9 @@ function setupPerformanceTelemetry() {
                     );
 
 
-                    if ($("metricTransfer")) {
+                    if (
+                        $("metricTransfer")
+                    ) {
 
                         $("metricTransfer")
                             .textContent =
@@ -2144,7 +2541,9 @@ function setupPerformanceTelemetry() {
                     }
 
 
-                    if ($("metricResources")) {
+                    if (
+                        $("metricResources")
+                    ) {
 
                         $("metricResources")
                             .textContent =
@@ -2179,7 +2578,8 @@ function setupNetworkListeners() {
             () => {
 
                 if (
-                    networkSetting === "AUTO"
+                    networkSetting ===
+                    "AUTO"
                 ) {
 
                     updateAdaptiveEngine();
@@ -2197,7 +2597,8 @@ function setupNetworkListeners() {
         () => {
 
             if (
-                networkSetting === "AUTO"
+                networkSetting ===
+                "AUTO"
             ) {
 
                 updateAdaptiveEngine();
@@ -2213,7 +2614,8 @@ function setupNetworkListeners() {
         () => {
 
             if (
-                networkSetting === "AUTO"
+                networkSetting ===
+                "AUTO"
             ) {
 
                 updateAdaptiveEngine();
@@ -2234,11 +2636,15 @@ document.addEventListener(
     "keydown",
     event => {
 
-        if (event.key === "Escape") {
+        if (
+            event.key ===
+            "Escape"
+        ) {
 
             closeConfig();
 
             closeProduct();
+
 
             $("cartOverlay")
                 ?.classList.remove(
@@ -2252,7 +2658,7 @@ document.addEventListener(
 
 
 /* ============================================================
-   EXPLORE
+   EXPLORE BUTTON
 ============================================================ */
 
 function setupExplore() {
@@ -2279,6 +2685,10 @@ function setupExplore() {
 
 async function init() {
 
+    /*
+        Setup UI events
+    */
+
     setupConfig();
 
     setupConfigOptions();
@@ -2301,44 +2711,56 @@ async function init() {
 
 
     /*
-        Detect first.
+        Initial detection
     */
 
     currentNetwork =
         detectNetwork();
+
 
     currentDevice =
         detectDevice();
 
 
     /*
-        Load products.
+        Load backend products
     */
 
     await loadProducts();
 
 
     /*
-        Optional active bandwidth test.
-        Does not block initial UI.
+        Run active bandwidth test
+        without blocking the UI
     */
 
     measureBandwidth()
-        .then(() => {
+        .then(
+            () => {
 
-            if (
-                networkSetting === "AUTO"
-            ) {
+                if (
+                    networkSetting ===
+                    "AUTO"
+                ) {
 
-                updateAdaptiveEngine();
+                    updateAdaptiveEngine();
+
+                }
 
             }
+        );
 
-        });
 
+    /*
+        Apply adaptive mode
+    */
 
     updateAdaptiveEngine();
 
+
+    /*
+        Initial cart
+    */
 
     updateCart();
 
@@ -2349,5 +2771,9 @@ async function init() {
 
 }
 
+
+/* ============================================================
+   START
+============================================================ */
 
 init();
