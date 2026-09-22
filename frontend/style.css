@@ -1597,14 +1597,15 @@ body.low-mode {
 }
 
 .product-modal {
-    background: #090e1a;
-    border: 1px solid var(--border-card);
+    background: #ffffff;
+    border: none;
     border-radius: var(--radius-lg);
     width: 100%;
     max-width: 760px;
-    padding: 32px;
+    padding: 0;
     position: relative;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
 }
 
 .product-modal .close-button {
@@ -1618,6 +1619,8 @@ body.low-mode {
     grid-template-columns: 1fr 1.2fr;
     gap: 28px;
     align-items: center;
+    background: #ffffff;
+    padding: 32px;
 }
 
 .product-modal-image {
