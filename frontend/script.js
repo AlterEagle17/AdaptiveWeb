@@ -1,656 +1,961 @@
-(function () {
-
-    "use strict";
+"use strict";
 
 
-    /* =====================================================
-       BACKEND
-       ===================================================== */
+/* =====================================================
+   BACKEND
+===================================================== */
 
-    const API_BASE_URL =
-        window.API_BASE_URL ||
-        "https://adaptiveweb.onrender.com/api";
-
-
-    let isBackendAvailable = false;
-
-    let activeCategory = "ALL";
-
-    let searchQuery = "";
-
-    const cart = new Map();
-
-    let currentProducts = [];
+const API_BASE_URL =
+    window.API_BASE_URL ||
+    "https://adaptiveweb.onrender.com/api";
 
 
-    /* =====================================================
-       FALLBACK PRODUCTS
-       ===================================================== */
+/* =====================================================
+   STATE
+===================================================== */
 
-    const localProducts = [
+let products = [];
 
-        {
-            id: 1,
-            name: "Nova X Pro 5G",
-            category: "SMARTPHONES",
-            price: 69999,
-            rating: 4.9,
-            reviewsCount: 342,
-            badge: "✦ Flagship",
-            description:
-                "Premium smartphone with OLED display, powerful performance and advanced camera system.",
-            image:
-                "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1000&q=85",
-            specs: [
-                "6.8 inch OLED",
-                "Snapdragon processor",
-                "5000mAh battery",
-                "5G connectivity"
-            ]
-        },
+let activeCategory = "ALL";
 
-        {
-            id: 2,
-            name: "UltraBook Pro 16",
-            category: "LAPTOPS",
-            price: 149999,
-            rating: 4.8,
-            reviewsCount: 189,
-            badge: "✦ Pro Power",
-            description:
-                "High-performance laptop designed for creators, developers and professionals.",
-            image:
-                "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1000&q=85",
-            specs: [
-                "16 inch display",
-                "16-Core CPU",
-                "32GB RAM",
-                "1TB NVMe"
-            ]
-        },
+let searchText = "";
 
-        {
-            id: 3,
-            name: "Sonic Pro Wireless ANC",
-            category: "AUDIO",
-            price: 18999,
-            rating: 4.9,
-            reviewsCount: 512,
-            badge: "✦ Hi-Res Audio",
-            description:
-                "Premium wireless headphones with active noise cancellation and spatial audio.",
-            image:
-                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=85",
-            specs: [
-                "Adaptive ANC",
-                "Hi-Res Audio",
-                "Bluetooth 5.4",
-                "48-hour battery"
-            ]
-        },
+let cart = [];
 
-        {
-            id: 4,
-            name: "Vision Watch Ultra",
-            category: "ACCESSORIES",
-            price: 42999,
-            rating: 4.7,
-            reviewsCount: 220,
-            badge: "✦ Titanium",
-            description:
-                "Premium smartwatch with GPS, health tracking and a titanium body.",
-            image:
-                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=85",
-            specs: [
-                "Titanium body",
-                "OLED display",
-                "GPS",
-                "Health tracking"
-            ]
-        },
+let networkSetting = "AUTO";
 
-        {
-            id: 5,
-            name: "UltraTab Pro 12.9",
-            category: "SMARTPHONES",
-            price: 89999,
-            rating: 4.8,
-            reviewsCount: 147,
-            badge: "✦ 120Hz",
-            description:
-                "Professional tablet for entertainment, creativity and productivity.",
-            image:
-                "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=1000&q=85",
-            specs: [
-                "12.9 inch display",
-                "Octa-core processor",
-                "Stylus support",
-                "Quad speakers"
-            ]
-        },
+let deviceSetting = "AUTO";
 
-        {
-            id: 6,
-            name: "Apex Mechanical Keyboard",
-            category: "ACCESSORIES",
-            price: 9499,
-            rating: 4.9,
-            reviewsCount: 410,
-            badge: "✦ Custom",
-            description:
-                "Premium mechanical keyboard with hot-swappable switches and RGB.",
-            image:
-                "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=1000&q=85",
-            specs: [
-                "Mechanical switches",
-                "RGB lighting",
-                "Wireless",
-                "Hot-swappable"
-            ]
-        },
+let detectedNetwork = "MEDIUM";
 
-        {
-            id: 7,
-            name: "Titan 4K Gaming Display",
-            category: "LAPTOPS",
-            price: 44999,
-            rating: 4.6,
-            reviewsCount: 95,
-            badge: "✦ 144Hz HDR",
-            description:
-                "4K gaming display with high refresh rate and HDR support.",
-            image:
-                "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=1000&q=85",
-            specs: [
-                "4K resolution",
-                "144Hz refresh rate",
-                "HDR",
-                "Adaptive sync"
-            ]
-        },
-
-        {
-            id: 8,
-            name: "Pulse 360 Studio Speaker",
-            category: "AUDIO",
-            price: 14999,
-            rating: 4.8,
-            reviewsCount: 310,
-            badge: "✦ 360° Sound",
-            description:
-                "Immersive wireless speaker with spatial audio and room optimization.",
-            image:
-                "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=1000&q=85",
-            specs: [
-                "360° sound",
-                "Spatial audio",
-                "Wi-Fi",
-                "Smart controls"
-            ]
-        },
-
-        {
-            id: 9,
-            name: "Alpha Mirrorless Camera",
-            category: "ACCESSORIES",
-            price: 189999,
-            rating: 5.0,
-            reviewsCount: 88,
-            badge: "✦ 61MP",
-            description:
-                "Professional mirrorless camera with advanced autofocus and stabilization.",
-            image:
-                "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=85",
-            specs: [
-                "61MP sensor",
-                "8K video",
-                "AI autofocus",
-                "Image stabilization"
-            ]
-        },
-
-        {
-            id: 10,
-            name: "Aeroflex Wireless Mouse",
-            category: "ACCESSORIES",
-            price: 6999,
-            rating: 4.7,
-            reviewsCount: 275,
-            badge: "✦ Ultralight",
-            description:
-                "Lightweight wireless mouse with high precision sensor and long battery life.",
-            image:
-                "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=1000&q=85",
-            specs: [
-                "26K DPI sensor",
-                "49g weight",
-                "Wireless",
-                "90-hour battery"
-            ]
-        }
-
-    ];
+let detectedDevice = "MEDIUM";
 
 
-    currentProducts = [...localProducts];
+
+/* =====================================================
+   FALLBACK PRODUCTS
+===================================================== */
+
+const fallbackProducts = [
+
+    {
+        id: 1,
+        name: "Nova X Pro 5G",
+        category: "SMARTPHONES",
+        price: 69999,
+        rating: 4.9,
+        reviews: 342,
+        badge: "FLAGSHIP",
+        description:
+            "Premium smartphone with OLED display and advanced camera system.",
+        image:
+            "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=900&q=85",
+        specs: [
+            "6.8 inch OLED",
+            "Snapdragon processor",
+            "5000mAh battery",
+            "5G connectivity"
+        ]
+    },
+
+    {
+        id: 2,
+        name: "UltraBook Pro 16",
+        category: "LAPTOPS",
+        price: 149999,
+        rating: 4.8,
+        reviews: 189,
+        badge: "PRO POWER",
+        description:
+            "High-performance laptop for creators, developers and professionals.",
+        image:
+            "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=900&q=85",
+        specs: [
+            "16 inch display",
+            "16-Core CPU",
+            "32GB RAM",
+            "1TB NVMe"
+        ]
+    },
+
+    {
+        id: 3,
+        name: "Sonic Pro Wireless ANC",
+        category: "AUDIO",
+        price: 18999,
+        rating: 4.9,
+        reviews: 512,
+        badge: "HI-RES AUDIO",
+        description:
+            "Premium wireless headphones with active noise cancellation.",
+        image:
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=85",
+        specs: [
+            "Adaptive ANC",
+            "Hi-Res Audio",
+            "Bluetooth 5.4",
+            "48-hour battery"
+        ]
+    },
+
+    {
+        id: 4,
+        name: "Vision Watch Ultra",
+        category: "ACCESSORIES",
+        price: 42999,
+        rating: 4.7,
+        reviews: 220,
+        badge: "TITANIUM",
+        description:
+            "Premium smartwatch with GPS and health tracking.",
+        image:
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=85",
+        specs: [
+            "Titanium body",
+            "OLED display",
+            "GPS",
+            "Health tracking"
+        ]
+    },
+
+    {
+        id: 5,
+        name: "UltraTab Pro 12.9",
+        category: "SMARTPHONES",
+        price: 89999,
+        rating: 4.8,
+        reviews: 147,
+        badge: "120HZ",
+        description:
+            "Professional tablet for entertainment and productivity.",
+        image:
+            "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=900&q=85",
+        specs: [
+            "12.9 inch display",
+            "Octa-core processor",
+            "Stylus support",
+            "Quad speakers"
+        ]
+    },
+
+    {
+        id: 6,
+        name: "Apex Mechanical Keyboard",
+        category: "ACCESSORIES",
+        price: 9499,
+        rating: 4.9,
+        reviews: 410,
+        badge: "CUSTOM",
+        description:
+            "Premium mechanical keyboard with hot-swappable switches.",
+        image:
+            "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=900&q=85",
+        specs: [
+            "Mechanical switches",
+            "RGB lighting",
+            "Wireless",
+            "Hot-swappable"
+        ]
+    },
+
+    {
+        id: 7,
+        name: "Titan 4K Gaming Display",
+        category: "ACCESSORIES",
+        price: 44999,
+        rating: 4.6,
+        reviews: 95,
+        badge: "144HZ HDR",
+        description:
+            "4K gaming display with high refresh rate and HDR support.",
+        image:
+            "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=900&q=85",
+        specs: [
+            "4K resolution",
+            "144Hz refresh rate",
+            "HDR",
+            "Adaptive sync"
+        ]
+    },
+
+    {
+        id: 8,
+        name: "Pulse 360 Studio Speaker",
+        category: "AUDIO",
+        price: 14999,
+        rating: 4.8,
+        reviews: 310,
+        badge: "360 SOUND",
+        description:
+            "Immersive wireless speaker with spatial audio.",
+        image:
+            "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=900&q=85",
+        specs: [
+            "360° sound",
+            "Spatial audio",
+            "Wi-Fi",
+            "Smart controls"
+        ]
+    }
+
+];
 
 
-    /* =====================================================
-       HELPERS
-       ===================================================== */
 
-    function setText(id, value) {
+/* =====================================================
+   UTILS
+===================================================== */
 
-        const el =
-            document.getElementById(id);
+function money(value) {
 
-        if (el) {
-            el.textContent = value;
-        }
+    return "₹" +
+        Number(value || 0)
+            .toLocaleString("en-IN");
+
+}
+
+
+function escapeHTML(value) {
+
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+function get(id) {
+
+    return document.getElementById(id);
+
+}
+
+
+
+/* =====================================================
+   NETWORK DETECTION
+===================================================== */
+
+function detectNetwork() {
+
+    const connection =
+        navigator.connection ||
+        navigator.mozConnection ||
+        navigator.webkitConnection;
+
+
+    if (!navigator.onLine) {
+
+        return "LOW";
 
     }
 
 
-    function formatPrice(value) {
+    if (!connection) {
 
-        return `₹${Number(value || 0).toLocaleString("en-IN")}`;
-
-    }
-
-
-    function escapeHTML(value) {
-
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
+        return "MEDIUM";
 
     }
 
 
-    function adaptiveImage(url, config) {
+    const type =
+        connection.effectiveType;
 
-        if (!url) return "";
 
-        try {
+    const downlink =
+        Number(connection.downlink || 0);
 
-            const parsed =
-                new URL(url);
 
-            if (config?.imageWidth) {
+    if (
+        type === "slow-2g" ||
+        type === "2g" ||
+        downlink < 1.5
+    ) {
 
-                parsed.searchParams.set(
-                    "w",
-                    config.imageWidth
-                );
-
-            }
-
-            if (config?.imageQuality) {
-
-                parsed.searchParams.set(
-                    "q",
-                    config.imageQuality
-                );
-
-            }
-
-            return parsed.toString();
-
-        } catch {
-
-            return url;
-
-        }
+        return "LOW";
 
     }
 
 
-    /* =====================================================
-       GET ADAPTIVE CONFIG
-       ===================================================== */
+    if (
+        type === "4g" &&
+        downlink >= 5
+    ) {
 
-    function getAdaptiveConfig() {
+        return "HIGH";
 
-        if (
-            window.AdaptiveEngine &&
-            typeof window.AdaptiveEngine.detectNetwork ===
-            "function" &&
-            typeof window.AdaptiveEngine.detectDevice ===
-            "function" &&
-            typeof window.AdaptiveEngine.calculateAdaptiveMode ===
-            "function"
-        ) {
+    }
 
-            const network =
-                window.AdaptiveEngine.detectNetwork();
 
-            const device =
-                window.AdaptiveEngine.detectDevice();
+    return "MEDIUM";
 
-            return {
+}
 
-                network,
-                device,
 
-                config:
-                    window.AdaptiveEngine
-                        .calculateAdaptiveMode(
-                            network.level,
-                            device.level
-                        )
 
-            };
+/* =====================================================
+   DEVICE DETECTION
+===================================================== */
 
-        }
+function detectDevice() {
 
+    const cores =
+        navigator.hardwareConcurrency || 4;
+
+
+    const memory =
+        navigator.deviceMemory;
+
+
+    if (
+        cores >= 8 &&
+        (!memory || memory >= 8)
+    ) {
+
+        return "HIGH";
+
+    }
+
+
+    if (
+        cores >= 4 &&
+        (!memory || memory >= 4)
+    ) {
+
+        return "MEDIUM";
+
+    }
+
+
+    return "LOW";
+
+}
+
+
+
+/* =====================================================
+   DETECT CURRENT ENVIRONMENT
+===================================================== */
+
+function refreshDetection() {
+
+    detectedNetwork =
+        detectNetwork();
+
+
+    detectedDevice =
+        detectDevice();
+
+
+    get("detectedNetwork").textContent =
+        `Detected: ${detectedNetwork}`;
+
+
+    get("detectedDevice").textContent =
+        `Detected: ${detectedDevice}`;
+
+}
+
+
+
+/* =====================================================
+   FINAL ADAPTIVE MODE
+===================================================== */
+
+function getFinalLevels() {
+
+    const network =
+        networkSetting === "AUTO"
+            ? detectedNetwork
+            : networkSetting;
+
+
+    const device =
+        deviceSetting === "AUTO"
+            ? detectedDevice
+            : deviceSetting;
+
+
+    return {
+        network,
+        device
+    };
+
+}
+
+
+
+/* =====================================================
+   DELIVERY DECISION
+===================================================== */
+
+function getDeliveryConfig() {
+
+    const levels =
+        getFinalLevels();
+
+
+    let mode = "BALANCED";
+
+
+    if (
+        levels.network === "LOW" ||
+        levels.device === "LOW"
+    ) {
+
+        mode = "LIGHTWEIGHT";
+
+    }
+    else if (
+        levels.network === "HIGH" &&
+        levels.device === "HIGH"
+    ) {
+
+        mode = "FULL EXPERIENCE";
+
+    }
+
+
+    if (mode === "LIGHTWEIGHT") {
 
         return {
 
-            network: {
-                level: "UNKNOWN"
-            },
+            ...levels,
 
-            device: {
-                level: "UNKNOWN"
-            },
+            mode,
 
-            config: {
+            image: "320px / 40%",
 
-                tier: "MEDIUM",
+            js: "Essential",
 
-                mode: "BALANCED",
+            animations: "Reduced",
 
-                imageWidth: 600,
+            prefetch: "OFF",
 
-                imageQuality: 65,
-
-                animations: "REDUCED",
-
-                recommendations: "LIMITED",
-
-                prefetch: "OFF",
-
-                jsStrategy: "BALANCED",
-
-                description:
-                    "Adaptive delivery active."
-
-            }
+            description:
+                "Lightweight delivery enabled. Data and processing are minimized."
 
         };
 
     }
 
 
-    /* =====================================================
-       BACKEND SYNC
-       ===================================================== */
+    if (mode === "FULL EXPERIENCE") {
 
-    async function syncWithBackend() {
+        return {
 
-        try {
+            ...levels,
 
-            const controller =
-                new AbortController();
+            mode,
 
-            const timeout =
-                setTimeout(
-                    () => controller.abort(),
-                    5000
-                );
+            image: "1000px / 85%",
 
+            js: "Full",
 
-            const response =
-                await fetch(
-                    `${API_BASE_URL}/products`,
-                    {
-                        signal:
-                            controller.signal
-                    }
-                );
+            animations: "Full",
 
+            prefetch: "ON",
 
-            clearTimeout(timeout);
+            description:
+                "Full experience enabled for a strong network and capable device."
 
-
-            if (!response.ok) {
-                throw new Error("API unavailable");
-            }
-
-
-            const data =
-                await response.json();
-
-
-            if (
-                Array.isArray(data) &&
-                data.length > 0
-            ) {
-
-                currentProducts =
-                    data.map(
-                        (item, index) => {
-
-                            const fallback =
-                                localProducts[
-                                    index %
-                                    localProducts.length
-                                ];
-
-
-                            return {
-
-                                id:
-                                    item.id ??
-                                    fallback.id,
-
-                                name:
-                                    item.name ??
-                                    fallback.name,
-
-                                category:
-                                    String(
-                                        item.category ??
-                                        fallback.category
-                                    ).toUpperCase(),
-
-                                price:
-                                    Number(
-                                        item.price ??
-                                        fallback.price
-                                    ),
-
-                                rating:
-                                    Number(
-                                        item.rating ??
-                                        fallback.rating
-                                    ),
-
-                                reviewsCount:
-                                    Number(
-                                        item.reviewCount ??
-                                        item.reviewsCount ??
-                                        fallback.reviewsCount
-                                    ),
-
-                                badge:
-                                    item.badge ??
-                                    fallback.badge,
-
-                                description:
-                                    item.description ??
-                                    fallback.description,
-
-                                image:
-                                    item.imageUrl ??
-                                    item.image ??
-                                    fallback.image,
-
-                                specs:
-                                    Array.isArray(item.specs)
-                                        ? item.specs
-                                        : fallback.specs
-
-                            };
-
-                        }
-                    );
-
-
-                isBackendAvailable = true;
-
-            }
-
-        } catch {
-
-            currentProducts =
-                [...localProducts];
-
-            isBackendAvailable = false;
-
-        }
-
-
-        updateUI();
+        };
 
     }
 
 
-    /* =====================================================
-       PRODUCTS
-       ===================================================== */
+    return {
 
-    function renderProducts(config) {
+        ...levels,
 
-        const grid =
-            document.getElementById(
-                "productGrid"
+        mode,
+
+        image: "600px / 65%",
+
+        js: "Balanced",
+
+        animations: "Reduced",
+
+        prefetch: "OFF",
+
+        description:
+            "Balanced delivery selected for the current environment."
+
+    };
+
+}
+
+
+
+/* =====================================================
+   CONFIG UI
+===================================================== */
+
+function updateConfigUI() {
+
+    refreshDetection();
+
+
+    const config =
+        getDeliveryConfig();
+
+
+    get("deliveryMode").textContent =
+        config.mode;
+
+
+    get("deliveryDescription").textContent =
+        config.description;
+
+
+    get("deliveryBadge").textContent =
+        `${config.network} / ${config.device}`;
+
+
+    get("detailImages").textContent =
+        config.image;
+
+
+    get("detailJS").textContent =
+        config.js;
+
+
+    get("detailAnimations").textContent =
+        config.animations;
+
+
+    get("detailPrefetch").textContent =
+        config.prefetch;
+
+
+    get("detailNetwork").textContent =
+        config.network;
+
+
+    get("detailDevice").textContent =
+        config.device;
+
+
+    applyAdaptiveImageStrategy(
+        config
+    );
+
+}
+
+
+
+/* =====================================================
+   OPTION BUTTONS
+===================================================== */
+
+function setupOptions() {
+
+
+    document
+        .querySelectorAll(
+            ".network-option"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    networkSetting =
+                        button.dataset.value;
+
+
+                    document
+                        .querySelectorAll(
+                            ".network-option"
+                        )
+                        .forEach(
+                            item =>
+                                item.classList.remove(
+                                    "active"
+                                )
+                        );
+
+
+                    button.classList.add(
+                        "active"
+                    );
+
+
+                    updateConfigUI();
+
+                }
             );
 
-
-        if (!grid) return;
-
-
-        let products =
-            [...currentProducts];
+        });
 
 
-        if (
-            activeCategory !== "ALL"
-        ) {
 
-            products =
-                products.filter(
-                    product =>
-                        product.category ===
-                        activeCategory
-                );
+    document
+        .querySelectorAll(
+            ".device-option"
+        )
+        .forEach(button => {
 
-        }
+            button.addEventListener(
+                "click",
+                () => {
 
-
-        if (
-            searchQuery.trim()
-        ) {
-
-            const query =
-                searchQuery
-                    .toLowerCase()
-                    .trim();
+                    deviceSetting =
+                        button.dataset.value;
 
 
-            products =
-                products.filter(
-                    product =>
-
-                        product.name
-                            .toLowerCase()
-                            .includes(query)
-
-                        ||
-
-                        product.description
-                            .toLowerCase()
-                            .includes(query)
-
-                        ||
-
-                        product.category
-                            .toLowerCase()
-                            .includes(query)
-
-                );
-
-        }
+                    document
+                        .querySelectorAll(
+                            ".device-option"
+                        )
+                        .forEach(
+                            item =>
+                                item.classList.remove(
+                                    "active"
+                                )
+                        );
 
 
-        const noResults =
-            document.getElementById(
-                "noResultsNotice"
+                    button.classList.add(
+                        "active"
+                    );
+
+
+                    updateConfigUI();
+
+                }
             );
 
+        });
 
-        if (!products.length) {
+}
 
-            grid.innerHTML = "";
 
-            if (noResults) {
-                noResults.style.display =
-                    "block";
+
+/* =====================================================
+   ADAPTIVE IMAGE STRATEGY
+===================================================== */
+
+function applyAdaptiveImageStrategy(
+    config
+) {
+
+    const imageWidth =
+        config.mode === "LIGHTWEIGHT"
+            ? 320
+            : config.mode === "FULL EXPERIENCE"
+                ? 900
+                : 600;
+
+
+    const quality =
+        config.mode === "LIGHTWEIGHT"
+            ? 40
+            : config.mode === "FULL EXPERIENCE"
+                ? 85
+                : 65;
+
+
+    document
+        .querySelectorAll(
+            ".product-image img"
+        )
+        .forEach(img => {
+
+            const original =
+                img.dataset.original ||
+                img.src;
+
+
+            img.dataset.original =
+                original;
+
+
+            try {
+
+                const url =
+                    new URL(original);
+
+
+                url.searchParams.set(
+                    "w",
+                    imageWidth
+                );
+
+
+                url.searchParams.set(
+                    "q",
+                    quality
+                );
+
+
+                img.src =
+                    url.toString();
+
+            } catch {
+
+                // Keep original URL.
+
             }
 
-            setText(
-                "productCount",
-                "0 products"
+        });
+
+}
+
+
+
+/* =====================================================
+   LOAD PRODUCTS FROM BACKEND
+===================================================== */
+
+async function loadProducts() {
+
+    try {
+
+        const controller =
+            new AbortController();
+
+
+        const timeout =
+            setTimeout(
+                () => controller.abort(),
+                5000
             );
 
-            return;
 
+        const response =
+            await fetch(
+                `${API_BASE_URL}/products`,
+                {
+                    signal:
+                        controller.signal
+                }
+            );
+
+
+        clearTimeout(timeout);
+
+
+        if (!response.ok) {
+            throw new Error("Backend unavailable");
         }
 
 
-        if (noResults) {
-            noResults.style.display =
-                "none";
+        const data =
+            await response.json();
+
+
+        if (
+            Array.isArray(data) &&
+            data.length
+        ) {
+
+            products =
+                data.map(
+                    (item, index) => {
+
+                        const fallback =
+                            fallbackProducts[
+                                index %
+                                fallbackProducts.length
+                            ];
+
+
+                        return {
+
+                            id:
+                                item.id ??
+                                fallback.id,
+
+                            name:
+                                item.name ??
+                                fallback.name,
+
+                            category:
+                                String(
+                                    item.category ??
+                                    fallback.category
+                                ).toUpperCase(),
+
+                            price:
+                                Number(
+                                    item.price ??
+                                    fallback.price
+                                ),
+
+                            rating:
+                                Number(
+                                    item.rating ??
+                                    fallback.rating
+                                ),
+
+                            reviews:
+                                Number(
+                                    item.reviews ??
+                                    item.reviewCount ??
+                                    fallback.reviews
+                                ),
+
+                            badge:
+                                item.badge ??
+                                fallback.badge,
+
+                            description:
+                                item.description ??
+                                fallback.description,
+
+                            image:
+                                item.imageUrl ??
+                                item.image ??
+                                fallback.image,
+
+                            specs:
+                                Array.isArray(
+                                    item.specs
+                                )
+                                    ? item.specs
+                                    : fallback.specs
+
+                        };
+
+                    }
+                );
+
+
+            get("backendStatus").textContent =
+                "Backend • Online";
+
+        }
+        else {
+
+            products =
+                [...fallbackProducts];
+
+            get("backendStatus").textContent =
+                "Backend • Fallback";
+
         }
 
+    }
+    catch {
+
+        products =
+            [...fallbackProducts];
+
+        get("backendStatus").textContent =
+            "Backend • Fallback";
+
+    }
+
+
+    renderProducts();
+
+}
+
+
+
+/* =====================================================
+   FILTER PRODUCTS
+===================================================== */
+
+function getFilteredProducts() {
+
+    return products.filter(
+        product => {
+
+            const categoryMatch =
+                activeCategory === "ALL" ||
+                product.category ===
+                activeCategory;
+
+
+            const text =
+                searchText
+                    .trim()
+                    .toLowerCase();
+
+
+            const searchMatch =
+                !text ||
+
+                product.name
+                    .toLowerCase()
+                    .includes(text)
+
+                ||
+
+                product.category
+                    .toLowerCase()
+                    .includes(text)
+
+                ||
+
+                product.description
+                    .toLowerCase()
+                    .includes(text);
+
+
+            return (
+                categoryMatch &&
+                searchMatch
+            );
+
+        }
+    );
+
+}
+
+
+
+/* =====================================================
+   RENDER PRODUCTS
+===================================================== */
+
+function renderProducts() {
+
+    const grid =
+        get("productGrid");
+
+
+    const list =
+        getFilteredProducts();
+
+
+    get("productCount").textContent =
+        `${list.length} products`;
+
+
+    if (!list.length) {
 
         grid.innerHTML = "";
 
+        get("noResults").style.display =
+            "block";
 
-        products.forEach(
-            product => {
+        return;
 
-                const card =
-                    document.createElement(
-                        "article"
-                    );
+    }
 
 
-                card.className =
-                    "product";
+    get("noResults").style.display =
+        "none";
 
 
-                const image =
-                    adaptiveImage(
-                        product.image,
-                        config
-                    );
+    grid.innerHTML =
+        list.map(
+            product => `
 
-
-                card.innerHTML = `
+                <article
+                    class="product"
+                >
 
                     <div
                         class="product-image"
-                        onclick="
-                            window.AdaptiveShop
-                                .openProductModal(
-                                    ${product.id}
-                                )
-                        "
+                        data-id="${product.id}"
                     >
 
                         <span class="product-badge">
@@ -660,12 +965,13 @@
                         </span>
 
                         <img
-                            src="${escapeHTML(image)}"
-                            alt="${escapeHTML(product.name)}"
+                            src="${escapeHTML(
+                                product.image
+                            )}"
+                            alt="${escapeHTML(
+                                product.name
+                            )}"
                             loading="lazy"
-                            decoding="async"
-                            width="600"
-                            height="450"
                         >
 
                     </div>
@@ -673,7 +979,7 @@
 
                     <div class="product-info">
 
-                        <div class="product-meta-row">
+                        <div class="product-top">
 
                             <span class="product-category">
                                 ${escapeHTML(
@@ -682,25 +988,14 @@
                             </span>
 
                             <span class="product-rating">
-                                ★
-                                <b>
-                                    ${product.rating}
-                                </b>
-                                <small>
-                                    (${product.reviewsCount})
-                                </small>
+                                ★ ${product.rating}
                             </span>
 
                         </div>
 
 
                         <h3
-                            onclick="
-                                window.AdaptiveShop
-                                    .openProductModal(
-                                        ${product.id}
-                                    )
-                            "
+                            data-product="${product.id}"
                         >
                             ${escapeHTML(
                                 product.name
@@ -708,7 +1003,7 @@
                         </h3>
 
 
-                        <p>
+                        <p class="product-description">
                             ${escapeHTML(
                                 product.description
                             )}
@@ -718,676 +1013,287 @@
                         <div class="product-bottom">
 
                             <strong class="product-price">
-                                ${formatPrice(
+                                ${money(
                                     product.price
                                 )}
                             </strong>
 
+
                             <button
                                 class="add-cart"
-                                onclick="
-                                    window.AdaptiveShop
-                                        .addToCart(
-                                            ${product.id}
-                                        )
-                                "
+                                data-add="${product.id}"
                             >
-                                Add +
+                                Add to Cart
                             </button>
 
                         </div>
 
                     </div>
 
-                `;
+                </article>
+
+            `
+        )
+        .join("");
 
 
-                grid.appendChild(card);
+    applyAdaptiveImageStrategy(
+        getDeliveryConfig()
+    );
+
+}
+
+
+
+/* =====================================================
+   CATEGORY
+===================================================== */
+
+function setCategory(category) {
+
+    activeCategory =
+        category;
+
+
+    document
+        .querySelectorAll(
+            ".category-card"
+        )
+        .forEach(
+            card => {
+
+                card.classList.toggle(
+                    "active",
+                    card.dataset.category ===
+                    category
+                );
 
             }
         );
 
 
-        setText(
-            "productCount",
-            `${products.length} products`
+    renderProducts();
+
+
+    document
+        .getElementById(
+            "products"
+        )
+        .scrollIntoView({
+            behavior: "smooth"
+        });
+
+}
+
+
+
+/* =====================================================
+   CART
+===================================================== */
+
+function addToCart(id) {
+
+    const product =
+        products.find(
+            item =>
+                String(item.id) ===
+                String(id)
         );
+
+
+    if (!product) return;
+
+
+    const existing =
+        cart.find(
+            item =>
+                String(item.product.id) ===
+                String(id)
+        );
+
+
+    if (existing) {
+
+        existing.quantity++;
+
+    }
+    else {
+
+        cart.push({
+            product,
+            quantity: 1
+        });
 
     }
 
 
-    /* =====================================================
-       MAIN UPDATE
-       ===================================================== */
-
-    function updateUI() {
-
-        const result =
-            getAdaptiveConfig();
+    renderCart();
 
 
-        renderProducts(
-            result.config
+    toast(
+        `${product.name} added to cart`
+    );
+
+}
+
+
+
+function changeQuantity(
+    id,
+    change
+) {
+
+    const item =
+        cart.find(
+            entry =>
+                String(entry.product.id) ===
+                String(id)
         );
 
 
-        updateConfigValues(
-            result.network,
-            result.device,
-            result.config
-        );
-
-    }
+    if (!item) return;
 
 
-    /* =====================================================
-       CONFIG PANEL
-       ===================================================== */
-
-    function updateConfigValues(
-        network,
-        device,
-        config
-    ) {
-
-        setText(
-            "configAdaptiveMode",
-            config.mode ||
-            config.tier ||
-            "UNKNOWN"
-        );
+    item.quantity +=
+        change;
 
 
-        setText(
-            "configAdaptiveDescription",
-            config.description ||
-            "Adaptive delivery active."
-        );
+    if (item.quantity <= 0) {
 
-
-        setText(
-            "configTier",
-            `${config.tier || "—"} TIER`
-        );
-
-
-        setText(
-            "configNetworkLevel",
-            network.level || "—"
-        );
-
-
-        setText(
-            "configNetworkType",
-            network.effectiveType || "—"
-        );
-
-
-        setText(
-            "configBrowserSpeed",
-
-            network.browserEstimate != null
-                ? `${network.browserEstimate} Mbps`
-                : "Unavailable"
-
-        );
-
-
-        setText(
-            "configMeasuredSpeed",
-
-            network.measuredBandwidth != null
-                ? `${network.measuredBandwidth} Mbps`
-                : "Unavailable"
-
-        );
-
-
-        setText(
-            "configDeviceLevel",
-            device.level || "—"
-        );
-
-
-        setText(
-            "configCPU",
-
-            device.cores
-                ? `${device.cores} Cores`
-                : "—"
-
-        );
-
-
-        setText(
-            "configMemory",
-
-            device.memory != null
-                ? `${device.memory} GB`
-                : "Unavailable"
-
-        );
-
-
-        setText(
-            "configPlatform",
-            device.platform || "—"
-        );
-
-
-        setText(
-            "configImage",
-
-            config.imageWidth
-                ? `${config.imageWidth}px / q${config.imageQuality}`
-                : "—"
-
-        );
-
-
-        setText(
-            "configJS",
-            config.jsStrategy || "—"
-        );
-
-
-        setText(
-            "configAnimations",
-            config.animations || "—"
-        );
-
-
-        setText(
-            "configPrefetch",
-            config.prefetch || "—"
-        );
-
-
-        setText(
-            "configRecommendations",
-            config.recommendations || "—"
-        );
-
-
-        setText(
-            "configBackend",
-
-            isBackendAvailable
-                ? "Online • Live API"
-                : "Fallback • Local"
-
-        );
-
-    }
-
-
-    function openConfig() {
-
-        updateUI();
-
-        document
-            .getElementById(
-                "configOverlay"
-            )
-            ?.classList.add(
-                "active"
+        cart =
+            cart.filter(
+                entry =>
+                    String(entry.product.id) !==
+                    String(id)
             );
 
     }
 
 
-    function closeConfig() {
+    renderCart();
 
-        document
-            .getElementById(
-                "configOverlay"
-            )
-            ?.classList.remove(
-                "active"
-            );
+}
 
-    }
 
 
-    /* =====================================================
-       PERFORMANCE CALLBACK
-       ===================================================== */
+function removeCart(id) {
 
-    function updateTelemetryUI(
-        telemetry
-    ) {
-
-        if (!telemetry) return;
-
-
-        if (
-            typeof telemetry.lcp ===
-            "number"
-        ) {
-
-            setText(
-                "perfLCP",
-                `${telemetry.lcp}s`
-            );
-
-        }
-
-
-        if (
-            typeof telemetry.inp ===
-            "number"
-        ) {
-
-            setText(
-                "perfINP",
-                `${telemetry.inp}ms`
-            );
-
-        }
-
-
-        if (
-            typeof telemetry.cls ===
-            "number"
-        ) {
-
-            setText(
-                "perfCLS",
-                telemetry.cls.toFixed(3)
-            );
-
-        }
-
-
-        if (
-            typeof telemetry.pageLoad ===
-            "number"
-        ) {
-
-            setText(
-                "perfPageLoad",
-                `${telemetry.pageLoad}ms`
-            );
-
-        }
-
-
-        if (
-            typeof telemetry.totalTransferBytes ===
-            "number"
-        ) {
-
-            setText(
-                "perfTransferSize",
-                `${(
-                    telemetry.totalTransferBytes /
-                    1024
-                ).toFixed(1)} KB`
-            );
-
-        }
-
-
-        if (
-            typeof telemetry.resourceCount ===
-            "number"
-        ) {
-
-            setText(
-                "perfResourceCount",
-                telemetry.resourceCount
-            );
-
-        }
-
-    }
-
-
-    /* =====================================================
-       CATEGORY
-       ===================================================== */
-
-    function filterCategory(category) {
-
-        activeCategory =
-            category;
-
-
-        document
-            .querySelectorAll(
-                ".category-card"
-            )
-            .forEach(
-                card => {
-
-                    card.classList.toggle(
-                        "active",
-                        card.dataset.cat ===
-                        category
-                    );
-
-                }
-            );
-
-
-        updateUI();
-
-        scrollToProducts();
-
-    }
-
-
-    /* =====================================================
-       SEARCH
-       ===================================================== */
-
-    function handleSearch(event) {
-
-        searchQuery =
-            event.target.value;
-
-
-        const clear =
-            document.getElementById(
-                "clearSearchBtn"
-            );
-
-
-        if (clear) {
-
-            clear.style.display =
-                searchQuery
-                    ? "block"
-                    : "none";
-
-        }
-
-
-        updateUI();
-
-    }
-
-
-    function clearSearchFilter() {
-
-        const input =
-            document.getElementById(
-                "productSearchInput"
-            );
-
-
-        if (input) {
-            input.value = "";
-        }
-
-
-        searchQuery = "";
-
-        activeCategory = "ALL";
-
-
-        document
-            .querySelectorAll(
-                ".category-card"
-            )
-            .forEach(
-                card => {
-
-                    card.classList.toggle(
-                        "active",
-                        card.dataset.cat ===
-                        "ALL"
-                    );
-
-                }
-            );
-
-
-        const clear =
-            document.getElementById(
-                "clearSearchBtn"
-            );
-
-
-        if (clear) {
-            clear.style.display =
-                "none";
-        }
-
-
-        updateUI();
-
-    }
-
-
-    /* =====================================================
-       CART
-       ===================================================== */
-
-    function addToCart(productId) {
-
-        const product =
-            currentProducts.find(
-                item =>
-                    String(item.id) ===
-                    String(productId)
-            );
-
-
-        if (!product) return;
-
-
-        if (cart.has(productId)) {
-
-            cart.get(
-                productId
-            ).quantity++;
-
-        } else {
-
-            cart.set(
-                productId,
-                {
-                    product,
-                    quantity: 1
-                }
-            );
-
-        }
-
-
-        updateCart();
-
-        showToast(
-            `${product.name} added to cart`
-        );
-
-    }
-
-
-    function removeFromCart(productId) {
-
-        cart.delete(productId);
-
-        updateCart();
-
-    }
-
-
-    function updateCartQuantity(
-        productId,
-        change
-    ) {
-
-        const item =
-            cart.get(productId);
-
-
-        if (!item) return;
-
-
-        item.quantity +=
-            change;
-
-
-        if (
-            item.quantity <= 0
-        ) {
-
-            cart.delete(
-                productId
-            );
-
-        }
-
-
-        updateCart();
-
-    }
-
-
-    function updateCart() {
-
-        let count = 0;
-
-        let total = 0;
-
-
-        cart.forEach(
-            ({ product, quantity }) => {
-
-                count += quantity;
-
-                total +=
-                    product.price *
-                    quantity;
-
-            }
+    cart =
+        cart.filter(
+            item =>
+                String(item.product.id) !==
+                String(id)
         );
 
 
-        setText(
-            "cartCount",
-            count
+    renderCart();
+
+}
+
+
+
+function renderCart() {
+
+    const container =
+        get("cartItems");
+
+
+    const count =
+        cart.reduce(
+            (sum, item) =>
+                sum + item.quantity,
+            0
         );
 
 
-        setText(
-            "cartSubtotal",
-            formatPrice(total)
+    const total =
+        cart.reduce(
+            (sum, item) =>
+                sum +
+                item.product.price *
+                item.quantity,
+            0
         );
 
 
-        renderCart();
-
-    }
-
-
-    function renderCart() {
-
-        const container =
-            document.getElementById(
-                "cartItemsList"
-            );
+    get("cartCount").textContent =
+        count;
 
 
-        if (!container) return;
+    get("cartTotal").textContent =
+        money(total);
 
 
-        if (!cart.size) {
+    if (!cart.length) {
 
-            container.innerHTML = `
+        container.innerHTML = `
 
-                <div class="cart-empty">
+            <div class="cart-empty">
 
-                    <div style="font-size:45px">
-                        🛒
-                    </div>
-
-                    <h3>
-                        Your cart is empty
-                    </h3>
-
-                    <p>
-                        Add something you love.
-                    </p>
-
+                <div style="font-size:45px">
+                    🛒
                 </div>
 
-            `;
+                <h3>
+                    Your cart is empty
+                </h3>
 
-            return;
+                <p>
+                    Add something you love.
+                </p>
 
-        }
+            </div>
 
+        `;
 
-        container.innerHTML = "";
+        return;
 
-
-        cart.forEach(
-            ({ product, quantity }) => {
-
-                const row =
-                    document.createElement(
-                        "div"
-                    );
+    }
 
 
-                row.className =
-                    "cart-item-row";
+    container.innerHTML =
+        cart.map(
+            item => `
 
-
-                row.innerHTML = `
+                <div class="cart-row">
 
                     <img
                         src="${escapeHTML(
-                            product.image
+                            item.product.image
                         )}"
-                        alt="${escapeHTML(
-                            product.name
-                        )}"
+                        alt=""
                     >
 
-                    <div class="cart-item-details">
+
+                    <div class="cart-row-info">
 
                         <strong>
                             ${escapeHTML(
-                                product.name
+                                item.product.name
                             )}
                         </strong>
 
-                        <span class="cart-item-price">
-                            ${formatPrice(
-                                product.price
+                        <span>
+                            ${money(
+                                item.product.price
                             )}
                         </span>
 
-                        <div class="cart-qty-controls">
+
+                        <div class="quantity">
 
                             <button
-                                onclick="
-                                    window.AdaptiveShop
-                                        .updateCartQuantity(
-                                            ${product.id},
-                                            -1
-                                        )
-                                "
+                                data-minus="${item.product.id}"
                             >
                                 −
                             </button>
 
-                            <span>
-                                ${quantity}
-                            </span>
+                            <b>
+                                ${item.quantity}
+                            </b>
 
                             <button
-                                onclick="
-                                    window.AdaptiveShop
-                                        .updateCartQuantity(
-                                            ${product.id},
-                                            1
-                                        )
-                                "
+                                data-plus="${item.product.id}"
                             >
                                 +
                             </button>
@@ -1396,561 +1302,615 @@
 
                     </div>
 
+
                     <button
-                        class="cart-remove-btn"
-                        onclick="
-                            window.AdaptiveShop
-                                .removeFromCart(
-                                    ${product.id}
-                                )
-                        "
+                        class="remove-cart"
+                        data-remove="${item.product.id}"
                     >
                         ✕
                     </button>
 
-                `;
+                </div>
+
+            `
+        )
+        .join("");
+
+}
 
 
-                container.appendChild(row);
 
-            }
+/* =====================================================
+   PRODUCT MODAL
+===================================================== */
+
+function openProduct(id) {
+
+    const product =
+        products.find(
+            item =>
+                String(item.id) ===
+                String(id)
         );
 
-    }
+
+    if (!product) return;
 
 
-    function openCart() {
-
-        document
-            .getElementById(
-                "cartDrawerOverlay"
+    const specs =
+        (product.specs || [])
+            .map(
+                spec =>
+                    `<li>✓ ${escapeHTML(
+                        spec
+                    )}</li>`
             )
-            ?.classList.add(
-                "active"
-            );
-
-    }
+            .join("");
 
 
-    function closeCart() {
+    get(
+        "productModalContent"
+    ).innerHTML = `
 
-        document
-            .getElementById(
-                "cartDrawerOverlay"
-            )
-            ?.classList.remove(
-                "active"
-            );
+        <div class="product-modal-image">
 
-    }
+            <img
+                src="${escapeHTML(
+                    product.image
+                )}"
+                alt="${escapeHTML(
+                    product.name
+                )}"
+            >
 
-
-    /* =====================================================
-       CHECKOUT
-       ===================================================== */
-
-    async function checkout() {
-
-        if (!cart.size) {
-
-            showToast(
-                "Your cart is empty"
-            );
-
-            return;
-
-        }
+        </div>
 
 
-        const items = [];
+        <div>
 
-        let total = 0;
+            <span class="product-category">
+                ${escapeHTML(
+                    product.category
+                )}
+            </span>
 
 
-        cart.forEach(
-            ({ product, quantity }) => {
+            <h2>
+                ${escapeHTML(
+                    product.name
+                )}
+            </h2>
 
-                items.push({
 
-                    productId:
-                        product.id,
+            <div class="product-rating">
+                ★ ${product.rating}
+                · ${product.reviews} reviews
+            </div>
 
-                    quantity,
 
-                    unitPrice:
+            <p>
+                ${escapeHTML(
+                    product.description
+                )}
+            </p>
+
+
+            <ul class="product-specs">
+                ${specs}
+            </ul>
+
+
+            <div
+                class="product-modal-bottom"
+            >
+
+                <strong
+                    class="product-modal-price"
+                >
+                    ${money(
                         product.price
-
-                });
-
-
-                total +=
-                    product.price *
-                    quantity;
-
-            }
-        );
+                    )}
+                </strong>
 
 
-        if (isBackendAvailable) {
+                <button
+                    class="primary-button"
+                    data-modal-add="${product.id}"
+                >
+                    Add to Cart
+                </button>
 
-            try {
+            </div>
 
-                await fetch(
-                    `${API_BASE_URL}/orders`,
-                    {
+        </div>
 
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify({
-
-                                customerName:
-                                    "Hackathon Demo User",
-
-                                customerEmail:
-                                    "demo@adaptiveshop.io",
-
-                                items
-
-                            })
-
-                    }
-                );
-
-            } catch {
-
-                // graceful fallback
-
-            }
-
-        }
+    `;
 
 
-        cart.clear();
+    get("productOverlay")
+        .classList.add("active");
 
-        updateCart();
-
-        closeCart();
+}
 
 
-        showToast(
-            `Order confirmed • ${formatPrice(total)}`
-        );
+
+/* =====================================================
+   PERFORMANCE
+===================================================== */
+
+function updatePerformance() {
+
+    const navigation =
+        performance.getEntriesByType(
+            "navigation"
+        )[0];
+
+
+    if (navigation) {
+
+        get("metricLoad").textContent =
+            `${Math.round(
+                navigation.loadEventEnd ||
+                navigation.duration
+            )} ms`;
 
     }
 
 
-    /* =====================================================
-       PRODUCT MODAL
-       ===================================================== */
+    const resources =
+        performance.getEntriesByType(
+            "resource"
+        );
 
-    function openProductModal(
-        productId
+
+    get("metricResources").textContent =
+        resources.length;
+
+
+    let transfer = 0;
+
+
+    resources.forEach(
+        item => {
+
+            transfer +=
+                item.transferSize || 0;
+
+        }
+    );
+
+
+    get("metricTransfer").textContent =
+        `${(
+            transfer / 1024
+        ).toFixed(1)} KB`;
+
+
+
+    if (
+        "PerformanceObserver"
+        in window
     ) {
 
-        const product =
-            currentProducts.find(
-                item =>
-                    String(item.id) ===
-                    String(productId)
-            );
+        try {
+
+            const lcpObserver =
+                new PerformanceObserver(
+                    list => {
+
+                        const entries =
+                            list.getEntries();
+
+                        const last =
+                            entries[
+                                entries.length - 1
+                            ];
 
 
-        if (!product) return;
+                        if (last) {
 
+                            get(
+                                "metricLCP"
+                            ).textContent =
+                                `${Math.round(
+                                    last.startTime
+                                )} ms`;
 
-        const overlay =
-            document.getElementById(
-                "productModalOverlay"
-            );
+                        }
 
-
-        const content =
-            document.getElementById(
-                "productModalContent"
-            );
-
-
-        if (!overlay || !content) return;
-
-
-        const specs =
-            (product.specs || [])
-                .map(
-                    spec =>
-                        `<li>✓ ${escapeHTML(
-                            spec
-                        )}</li>`
-                )
-                .join("");
-
-
-        content.innerHTML = `
-
-            <div class="product-modal-image">
-
-                <img
-                    src="${escapeHTML(
-                        product.image
-                    )}"
-                    alt="${escapeHTML(
-                        product.name
-                    )}"
-                >
-
-            </div>
-
-
-            <div class="product-modal-info">
-
-                <span class="product-badge">
-                    ${escapeHTML(
-                        product.badge
-                    )}
-                </span>
-
-                <span class="product-category">
-                    ${escapeHTML(
-                        product.category
-                    )}
-                </span>
-
-                <h2>
-                    ${escapeHTML(
-                        product.name
-                    )}
-                </h2>
-
-                <div class="product-modal-rating">
-
-                    ★
-                    <b>
-                        ${product.rating}
-                    </b>
-
-                    / 5
-
-                    ·
-
-                    ${product.reviewsCount}
-                    reviews
-
-                </div>
-
-                <p class="product-modal-desc">
-                    ${escapeHTML(
-                        product.description
-                    )}
-                </p>
-
-                <ul class="product-modal-specs">
-                    ${specs}
-                </ul>
-
-                <div class="product-modal-bottom">
-
-                    <strong class="product-modal-price">
-                        ${formatPrice(
-                            product.price
-                        )}
-                    </strong>
-
-                    <button
-                        class="primary-button"
-                        onclick="
-                            window.AdaptiveShop
-                                .addToCart(
-                                    ${product.id}
-                                );
-
-                            window.AdaptiveShop
-                                .closeProductModal();
-                        "
-                    >
-                        Add to Cart
-                    </button>
-
-                </div>
-
-            </div>
-
-        `;
-
-
-        overlay.classList.add(
-            "active"
-        );
-
-    }
-
-
-    function closeProductModal() {
-
-        document
-            .getElementById(
-                "productModalOverlay"
-            )
-            ?.classList.remove(
-                "active"
-            );
-
-    }
-
-
-    /* =====================================================
-       TOAST
-       ===================================================== */
-
-    function showToast(message) {
-
-        const container =
-            document.getElementById(
-                "toastContainer"
-            );
-
-
-        if (!container) return;
-
-
-        const toast =
-            document.createElement(
-                "div"
-            );
-
-
-        toast.className =
-            "toast";
-
-
-        toast.textContent =
-            message;
-
-
-        container.appendChild(
-            toast
-        );
-
-
-        setTimeout(
-            () => {
-
-                toast.style.opacity =
-                    "0";
-
-                toast.style.transform =
-                    "translateY(10px)";
-
-                setTimeout(
-                    () => toast.remove(),
-                    300
+                    }
                 );
 
-            },
-            2200
+
+            lcpObserver.observe({
+                type: "largest-contentful-paint",
+                buffered: true
+            });
+
+        }
+        catch {}
+
+
+
+        try {
+
+            const clsObserver =
+                new PerformanceObserver(
+                    list => {
+
+                        let cls = 0;
+
+
+                        list
+                            .getEntries()
+                            .forEach(
+                                entry => {
+
+                                    if (
+                                        !entry.hadRecentInput
+                                    ) {
+
+                                        cls +=
+                                            entry.value;
+
+                                    }
+
+                                }
+                            );
+
+
+                        get(
+                            "metricCLS"
+                        ).textContent =
+                            cls.toFixed(3);
+
+                    }
+                );
+
+
+            clsObserver.observe({
+                type: "layout-shift",
+                buffered: true
+            });
+
+        }
+        catch {}
+
+
+
+        try {
+
+            const inpObserver =
+                new PerformanceObserver(
+                    list => {
+
+                        const entries =
+                            list.getEntries();
+
+
+                        const last =
+                            entries[
+                                entries.length - 1
+                            ];
+
+
+                        if (last) {
+
+                            get(
+                                "metricINP"
+                            ).textContent =
+                                `${Math.round(
+                                    last.duration
+                                )} ms`;
+
+                        }
+
+                    }
+                );
+
+
+            inpObserver.observe({
+                type: "event",
+                buffered: true,
+                durationThreshold: 40
+            });
+
+        }
+        catch {}
+
+    }
+
+}
+
+
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+function toast(message) {
+
+    const container =
+        get("toastContainer");
+
+
+    const element =
+        document.createElement(
+            "div"
         );
 
-    }
+
+    element.className =
+        "toast";
 
 
-    /* =====================================================
-       SCROLL
-       ===================================================== */
-
-    function scrollToProducts() {
-
-        document
-            .getElementById(
-                "products"
-            )
-            ?.scrollIntoView({
-                behavior: "smooth"
-            });
-
-    }
+    element.textContent =
+        message;
 
 
-    function scrollToCategories() {
-
-        document
-            .getElementById(
-                "categories"
-            )
-            ?.scrollIntoView({
-                behavior: "smooth"
-            });
-
-    }
+    container.appendChild(
+        element
+    );
 
 
-    /* =====================================================
-       EVENTS
-       ===================================================== */
+    setTimeout(
+        () => element.remove(),
+        2200
+    );
 
-    function init() {
-
-
-        document
-            .getElementById(
-                "productSearchInput"
-            )
-            ?.addEventListener(
-                "input",
-                handleSearch
-            );
+}
 
 
-        document
-            .getElementById(
-                "clearSearchBtn"
-            )
-            ?.addEventListener(
-                "click",
-                clearSearchFilter
-            );
+
+/* =====================================================
+   EVENTS
+===================================================== */
+
+function setupEvents() {
 
 
-        document
-            .getElementById(
-                "cartButton"
-            )
-            ?.addEventListener(
-                "click",
-                openCart
-            );
+    /* Search */
+
+    get("searchInput")
+        .addEventListener(
+            "input",
+            event => {
+
+                searchText =
+                    event.target.value;
 
 
-        document
-            .getElementById(
-                "closeCartDrawer"
-            )
-            ?.addEventListener(
-                "click",
-                closeCart
-            );
+                get("clearSearch").style.display =
+                    searchText
+                        ? "block"
+                        : "none";
 
 
-        document
-            .getElementById(
-                "checkoutButton"
-            )
-            ?.addEventListener(
-                "click",
-                checkout
-            );
+                renderProducts();
+
+            }
+        );
 
 
-        document
-            .getElementById(
-                "cartDrawerOverlay"
-            )
-            ?.addEventListener(
-                "click",
-                event => {
+    get("clearSearch")
+        .addEventListener(
+            "click",
+            () => {
 
-                    if (
-                        event.target.id ===
-                        "cartDrawerOverlay"
-                    ) {
+                searchText = "";
 
-                        closeCart();
+                get(
+                    "searchInput"
+                ).value = "";
 
-                    }
+                get(
+                    "clearSearch"
+                ).style.display =
+                    "none";
 
-                }
-            );
+                renderProducts();
 
-
-        document
-            .getElementById(
-                "configButton"
-            )
-            ?.addEventListener(
-                "click",
-                openConfig
-            );
+            }
+        );
 
 
-        document
-            .getElementById(
-                "closeConfig"
-            )
-            ?.addEventListener(
-                "click",
-                closeConfig
-            );
+    /* Categories */
+
+    document
+        .querySelectorAll(
+            ".category-card"
+        )
+        .forEach(
+            card => {
+
+                card.addEventListener(
+                    "click",
+                    () =>
+                        setCategory(
+                            card.dataset.category
+                        )
+                );
+
+            }
+        );
 
 
-        document
-            .getElementById(
-                "configOverlay"
-            )
-            ?.addEventListener(
-                "click",
-                event => {
-
-                    if (
-                        event.target.id ===
-                        "configOverlay"
-                    ) {
-
-                        closeConfig();
-
-                    }
-
-                }
-            );
+    get("viewAllButton")
+        .addEventListener(
+            "click",
+            () =>
+                setCategory("ALL")
+        );
 
 
-        document
-            .getElementById(
-                "closeProductModal"
-            )
-            ?.addEventListener(
-                "click",
-                closeProductModal
-            );
+    /* Hero buttons */
+
+    get("shopNowButton")
+        .addEventListener(
+            "click",
+            () => {
+
+                get(
+                    "products"
+                ).scrollIntoView({
+                    behavior: "smooth"
+                });
+
+            }
+        );
 
 
-        document
-            .getElementById(
-                "productModalOverlay"
-            )
-            ?.addEventListener(
-                "click",
-                event => {
+    get("browseButton")
+        .addEventListener(
+            "click",
+            () => {
 
-                    if (
-                        event.target.id ===
-                        "productModalOverlay"
-                    ) {
+                get(
+                    "categories"
+                ).scrollIntoView({
+                    behavior: "smooth"
+                });
 
-                        closeProductModal();
+            }
+        );
 
-                    }
+
+    get("promoButton")
+        .addEventListener(
+            "click",
+            () => {
+
+                get(
+                    "products"
+                ).scrollIntoView({
+                    behavior: "smooth"
+                });
+
+            }
+        );
+
+
+    /* Product actions */
+
+    get("productGrid")
+        .addEventListener(
+            "click",
+            event => {
+
+                const add =
+                    event.target.closest(
+                        "[data-add]"
+                    );
+
+
+                if (add) {
+
+                    addToCart(
+                        add.dataset.add
+                    );
+
+                    return;
 
                 }
-            );
 
 
-        document.addEventListener(
-            "keydown",
+                const product =
+                    event.target.closest(
+                        "[data-product]"
+                    );
+
+
+                const image =
+                    event.target.closest(
+                        ".product-image"
+                    );
+
+
+                if (product) {
+
+                    openProduct(
+                        product.dataset.product
+                    );
+
+                    return;
+
+                }
+
+
+                if (image) {
+
+                    openProduct(
+                        image.dataset.id
+                    );
+
+                }
+
+            }
+        );
+
+
+    /* Cart */
+
+    get("cartButton")
+        .addEventListener(
+            "click",
+            () =>
+                get(
+                    "cartOverlay"
+                ).classList.add(
+                    "active"
+                )
+        );
+
+
+    get("closeCart")
+        .addEventListener(
+            "click",
+            () =>
+                get(
+                    "cartOverlay"
+                ).classList.remove(
+                    "active"
+                )
+        );
+
+
+    get("cartItems")
+        .addEventListener(
+            "click",
             event => {
 
                 if (
-                    event.key ===
-                    "Escape"
+                    event.target.dataset.plus
                 ) {
 
-                    closeConfig();
+                    changeQuantity(
+                        event.target.dataset.plus,
+                        1
+                    );
 
-                    closeCart();
+                }
 
-                    closeProductModal();
+
+                if (
+                    event.target.dataset.minus
+                ) {
+
+                    changeQuantity(
+                        event.target.dataset.minus,
+                        -1
+                    );
+
+                }
+
+
+                if (
+                    event.target.dataset.remove
+                ) {
+
+                    removeCart(
+                        event.target.dataset.remove
+                    );
 
                 }
 
@@ -1958,84 +1918,173 @@
         );
 
 
-        /* Keep adaptive engine monitoring */
+    get("checkoutButton")
+        .addEventListener(
+            "click",
+            () => {
 
-        if (
-            window.AdaptiveEngine &&
-            typeof window.AdaptiveEngine
-                .initPerformanceMonitoring ===
-            "function"
-        ) {
+                if (!cart.length) {
 
-            window.AdaptiveEngine
-                .initPerformanceMonitoring(
-                    updateTelemetryUI
+                    toast(
+                        "Your cart is empty"
+                    );
+
+                    return;
+
+                }
+
+
+                cart = [];
+
+                renderCart();
+
+                get(
+                    "cartOverlay"
+                ).classList.remove(
+                    "active"
                 );
 
-        }
 
+                toast(
+                    "Demo order completed successfully"
+                );
 
-        updateUI();
-
-        syncWithBackend();
-
-    }
-
-
-    /* =====================================================
-       PUBLIC API
-       ===================================================== */
-
-    window.AdaptiveShop = {
-
-        addToCart,
-
-        removeFromCart,
-
-        updateCartQuantity,
-
-        openCart,
-
-        closeCart,
-
-        openProductModal,
-
-        closeProductModal,
-
-        openConfig,
-
-        closeConfig,
-
-        filterCategory,
-
-        clearSearchFilter,
-
-        scrollToProducts,
-
-        scrollToCategories
-
-    };
-
-
-    /* =====================================================
-       START
-       ===================================================== */
-
-    if (
-        document.readyState ===
-        "loading"
-    ) {
-
-        document.addEventListener(
-            "DOMContentLoaded",
-            init
+            }
         );
 
-    } else {
 
-        init();
+    /* Product modal */
 
-    }
+    get("closeProduct")
+        .addEventListener(
+            "click",
+            () =>
+                get(
+                    "productOverlay"
+                ).classList.remove(
+                    "active"
+                )
+        );
 
 
-})();
+    get("productModalContent")
+        .addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target.dataset.modalAdd
+                ) {
+
+                    addToCart(
+                        event.target.dataset.modalAdd
+                    );
+
+                    get(
+                        "productOverlay"
+                    ).classList.remove(
+                        "active"
+                    );
+
+                }
+
+            }
+        );
+
+
+    /* Config */
+
+    get("configButton")
+        .addEventListener(
+            "click",
+            () => {
+
+                updateConfigUI();
+
+                get(
+                    "configOverlay"
+                ).classList.add(
+                    "active"
+                );
+
+            }
+        );
+
+
+    get("closeConfig")
+        .addEventListener(
+            "click",
+            () =>
+                get(
+                    "configOverlay"
+                ).classList.remove(
+                    "active"
+                )
+        );
+
+
+    /* Close overlay by background */
+
+    [
+        "configOverlay",
+        "productOverlay"
+    ]
+        .forEach(id => {
+
+            get(id)
+                .addEventListener(
+                    "click",
+                    event => {
+
+                        if (
+                            event.target.id === id
+                        ) {
+
+                            get(id)
+                                .classList
+                                .remove(
+                                    "active"
+                                );
+
+                        }
+
+                    }
+                );
+
+        });
+
+
+    setupOptions();
+
+}
+
+
+
+/* =====================================================
+   START
+===================================================== */
+
+async function init() {
+
+    detectedNetwork =
+        detectNetwork();
+
+
+    detectedDevice =
+        detectDevice();
+
+
+    setupEvents();
+
+    renderCart();
+
+    updatePerformance();
+
+    await loadProducts();
+
+    updateConfigUI();
+
+}
+
+
+init();
