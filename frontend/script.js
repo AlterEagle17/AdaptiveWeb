@@ -1541,21 +1541,35 @@ function openConfig() {
 
     updateAdaptiveEngine();
 
+    const overlay = $("configOverlay");
 
-    $("configOverlay")
-        ?.classList.add(
-            "active"
+    if (overlay) {
+
+        overlay.classList.add("active");
+        overlay.setAttribute(
+            "aria-hidden",
+            "false"
         );
+
+    }
 
 }
 
 
 function closeConfig() {
 
-    $("configOverlay")
-        ?.classList.remove(
-            "active"
+    const overlay = $("configOverlay");
+
+    if (overlay) {
+
+        overlay.classList.remove("active");
+
+        overlay.setAttribute(
+            "aria-hidden",
+            "true"
         );
+
+    }
 
 }
 
