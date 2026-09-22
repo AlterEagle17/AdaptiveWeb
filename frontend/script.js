@@ -1,209 +1,20 @@
 "use strict";
 
-
 /* ============================================================
-   CONFIG
+   ADAPTIVESHOP
+   NETWORK + DEVICE ADAPTIVE ENGINE
 ============================================================ */
 
 const API_BASE_URL =
-    window.API_BASE_URL ||
     "https://adaptiveweb.onrender.com/api";
 
 
 /* ============================================================
-   STATE
+   HELPERS
 ============================================================ */
 
-let products = [];
-
-let activeCategory = "ALL";
-
-let searchText = "";
-
-let cart = [];
-
-let networkSetting = "AUTO";
-
-let deviceSetting = "AUTO";
-
-let detectedNetwork = "MEDIUM";
-
-let detectedDevice = "MEDIUM";
-
-let currentMode = "MEDIUM";
-
-let currentConfig = null;
-
-
-
-/* ============================================================
-   FALLBACK PRODUCTS
-============================================================ */
-
-const fallbackProducts = [
-
-    {
-        id: 1,
-        name: "Nova X Pro 5G",
-        category: "SMARTPHONES",
-        price: 69999,
-        rating: 4.9,
-        reviews: 342,
-        badge: "FLAGSHIP",
-        description:
-            "Premium smartphone with OLED display and advanced camera system.",
-        image:
-            "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1000&q=85"
-    },
-
-    {
-        id: 2,
-        name: "UltraBook Pro 16",
-        category: "LAPTOPS",
-        price: 149999,
-        rating: 4.8,
-        reviews: 189,
-        badge: "PRO POWER",
-        description:
-            "High-performance laptop for creators, developers and professionals.",
-        image:
-            "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1000&q=85"
-    },
-
-    {
-        id: 3,
-        name: "Sonic Pro Wireless ANC",
-        category: "AUDIO",
-        price: 18999,
-        rating: 4.9,
-        reviews: 512,
-        badge: "HI-RES AUDIO",
-        description:
-            "Premium wireless headphones with active noise cancellation.",
-        image:
-            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=85"
-    },
-
-    {
-        id: 4,
-        name: "Vision Watch Ultra",
-        category: "ACCESSORIES",
-        price: 42999,
-        rating: 4.7,
-        reviews: 220,
-        badge: "TITANIUM",
-        description:
-            "Premium smartwatch with GPS and health tracking.",
-        image:
-            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=85"
-    },
-
-    {
-        id: 5,
-        name: "UltraTab Pro 12.9",
-        category: "SMARTPHONES",
-        price: 89999,
-        rating: 4.8,
-        reviews: 147,
-        badge: "120HZ",
-        description:
-            "Professional tablet for entertainment and productivity.",
-        image:
-            "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=1000&q=85"
-    },
-
-    {
-        id: 6,
-        name: "Apex Mechanical Keyboard",
-        category: "ACCESSORIES",
-        price: 9499,
-        rating: 4.9,
-        reviews: 410,
-        badge: "CUSTOM",
-        description:
-            "Premium mechanical keyboard with hot-swappable switches.",
-        image:
-            "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=1000&q=85"
-    },
-
-    {
-        id: 7,
-        name: "Titan 4K Gaming Display",
-        category: "ACCESSORIES",
-        price: 44999,
-        rating: 4.6,
-        reviews: 95,
-        badge: "144HZ HDR",
-        description:
-            "4K gaming display with high refresh rate and HDR support.",
-        image:
-            "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=1000&q=85"
-    },
-
-    {
-        id: 8,
-        name: "Pulse 360 Studio Speaker",
-        category: "AUDIO",
-        price: 14999,
-        rating: 4.8,
-        reviews: 310,
-        badge: "360 SOUND",
-        description:
-            "Immersive wireless speaker with spatial audio.",
-        image:
-            "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=1000&q=85"
-    },
-
-    {
-        id: 9,
-        name: "Alpha Mirrorless Camera",
-        category: "ACCESSORIES",
-        price: 189999,
-        rating: 5.0,
-        reviews: 88,
-        badge: "8K CAMERA",
-        description:
-            "Professional mirrorless camera with high-resolution sensor.",
-        image:
-            "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1000&q=85"
-    },
-
-    {
-        id: 10,
-        name: "Aeroflex Wireless Mouse",
-        category: "ACCESSORIES",
-        price: 6999,
-        rating: 4.7,
-        reviews: 275,
-        badge: "ULTRALIGHT",
-        description:
-            "Lightweight wireless mouse designed for gaming and productivity.",
-        image:
-            "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=1000&q=85"
-    }
-
-];
-
-
-
-/* ============================================================
-   HELPER
-============================================================ */
-
-function $(id) {
-
-    return document.getElementById(id);
-
-}
-
-
-function money(value) {
-
-    return "₹" +
-        Number(value || 0)
-            .toLocaleString("en-IN");
-
-}
+const $ = id =>
+    document.getElementById(id);
 
 
 function escapeHTML(value) {
@@ -218,71 +29,300 @@ function escapeHTML(value) {
 }
 
 
+function money(value) {
+
+    return "₹" +
+        Number(value || 0).toLocaleString("en-IN");
+
+}
+
+
+/* ============================================================
+   STATE
+============================================================ */
+
+let products = [];
+
+let cart = [];
+
+let activeCategory = "ALL";
+
+let searchTerm = "";
+
+let networkSetting = "AUTO";
+
+let deviceSetting = "AUTO";
+
+let currentNetwork = null;
+
+let currentDevice = null;
+
+let currentConfig = null;
+
+let measuredBandwidth = null;
+
+
+/* ============================================================
+   FALLBACK PRODUCTS
+============================================================ */
+
+const fallbackProducts = [
+
+    {
+        id: 1,
+        name: "Nova X Pro",
+        category: "SMARTPHONES",
+        price: 64999,
+        rating: 4.8,
+        reviews: 1284,
+        badge: "BESTSELLER",
+        description:
+            "Flagship smartphone with a high-refresh display and powerful processor.",
+        image:
+            "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=1000&q=85"
+    },
+
+    {
+        id: 2,
+        name: "Pixel Edge",
+        category: "SMARTPHONES",
+        price: 54999,
+        rating: 4.7,
+        reviews: 932,
+        badge: "NEW",
+        description:
+            "Clean premium smartphone designed for photography and everyday performance.",
+        image:
+            "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1000&q=85"
+    },
+
+    {
+        id: 3,
+        name: "AeroBook Pro",
+        category: "LAPTOPS",
+        price: 89999,
+        rating: 4.9,
+        reviews: 764,
+        badge: "PRO",
+        description:
+            "Powerful laptop for development, productivity and creative workloads.",
+        image:
+            "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1000&q=85"
+    },
+
+    {
+        id: 4,
+        name: "UltraBook Air",
+        category: "LAPTOPS",
+        price: 74999,
+        rating: 4.6,
+        reviews: 541,
+        badge: "LIGHT",
+        description:
+            "Slim and lightweight laptop designed for students and professionals.",
+        image:
+            "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=1000&q=85"
+    },
+
+    {
+        id: 5,
+        name: "Sonic Max",
+        category: "AUDIO",
+        price: 12999,
+        rating: 4.8,
+        reviews: 2187,
+        badge: "POPULAR",
+        description:
+            "Premium wireless headphones with immersive audio and long battery life.",
+        image:
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=85"
+    },
+
+    {
+        id: 6,
+        name: "Studio Buds",
+        category: "AUDIO",
+        price: 7999,
+        rating: 4.5,
+        reviews: 1452,
+        badge: "HOT",
+        description:
+            "Compact wireless earbuds with clear sound and active noise cancellation.",
+        image:
+            "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=1000&q=85"
+    },
+
+    {
+        id: 7,
+        name: "FitWatch X",
+        category: "ACCESSORIES",
+        price: 8999,
+        rating: 4.4,
+        reviews: 876,
+        badge: "SMART",
+        description:
+            "Smart wearable with fitness tracking, notifications and health insights.",
+        image:
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=85"
+    },
+
+    {
+        id: 8,
+        name: "PowerDock",
+        category: "ACCESSORIES",
+        price: 3999,
+        rating: 4.3,
+        reviews: 632,
+        badge: "VALUE",
+        description:
+            "Compact multi-device charging dock for your everyday setup.",
+        image:
+            "https://images.unsplash.com/photo-1609592424984-4b8b1b5c7b8d?auto=format&fit=crop&w=1000&q=85"
+    }
+
+];
+
 
 /* ============================================================
    NETWORK DETECTION
 ============================================================ */
 
-function detectNetwork() {
+function getConnection() {
 
-    if (!navigator.onLine) {
-
-        return "LOW";
-
-    }
-
-
-    const connection =
+    return (
         navigator.connection ||
         navigator.mozConnection ||
-        navigator.webkitConnection;
-
-
-    if (!connection) {
-
-        return "MEDIUM";
-
-    }
-
-
-    const type =
-        connection.effectiveType || "";
-
-
-    const downlink =
-        Number(connection.downlink || 0);
-
-
-    const rtt =
-        Number(connection.rtt || 0);
-
-
-    if (
-        type === "slow-2g" ||
-        type === "2g" ||
-        downlink < 1.5 ||
-        rtt >= 400
-    ) {
-
-        return "LOW";
-
-    }
-
-
-    if (
-        downlink >= 5 &&
-        rtt < 150
-    ) {
-
-        return "HIGH";
-
-    }
-
-
-    return "MEDIUM";
+        navigator.webkitConnection ||
+        null
+    );
 
 }
 
+
+function detectNetwork() {
+
+    const connection = getConnection();
+
+    const online =
+        navigator.onLine !== false;
+
+    const effectiveType =
+        connection?.effectiveType ||
+        "unknown";
+
+    const downlink =
+        typeof connection?.downlink === "number"
+            ? connection.downlink
+            : null;
+
+    const rtt =
+        typeof connection?.rtt === "number"
+            ? connection.rtt
+            : null;
+
+    const saveData =
+        Boolean(connection?.saveData);
+
+
+    const speed =
+        measuredBandwidth ??
+        downlink;
+
+
+    let level = "MEDIUM";
+
+
+    if (
+        !online ||
+        saveData ||
+        effectiveType === "slow-2g" ||
+        effectiveType === "2g" ||
+        (speed !== null && speed < 1.5) ||
+        (rtt !== null && rtt >= 400)
+    ) {
+
+        level = "LOW";
+
+    }
+    else if (
+        speed !== null &&
+        speed >= 5 &&
+        (rtt === null || rtt < 150)
+    ) {
+
+        level = "HIGH";
+
+    }
+
+
+    return {
+        level,
+        online,
+        effectiveType,
+        downlink,
+        rtt,
+        saveData,
+        measuredBandwidth
+    };
+
+}
+
+
+/* ============================================================
+   BANDWIDTH TEST
+============================================================ */
+
+async function measureBandwidth() {
+
+    try {
+
+        const start =
+            performance.now();
+
+        const response =
+            await fetch(
+                "assets/network-test.bin?t=" +
+                Date.now(),
+                {
+                    cache: "no-store"
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error("Speed test failed");
+        }
+
+
+        const buffer =
+            await response.arrayBuffer();
+
+
+        const seconds =
+            (performance.now() - start) / 1000;
+
+
+        if (seconds > 0) {
+
+            measuredBandwidth =
+                Number(
+                    (
+                        buffer.byteLength *
+                        8 /
+                        seconds /
+                        1000000
+                    ).toFixed(2)
+                );
+
+        }
+
+    }
+    catch {
+
+        measuredBandwidth = null;
+
+    }
+
+}
 
 
 /* ============================================================
@@ -294,35 +334,45 @@ function detectDevice() {
     const cores =
         navigator.hardwareConcurrency || 4;
 
-
     const memory =
-        navigator.deviceMemory;
+        navigator.deviceMemory || null;
+
+
+    let level = "MEDIUM";
 
 
     if (
         cores >= 8 &&
-        (!memory || memory >= 8)
+        (memory === null || memory >= 8)
     ) {
 
-        return "HIGH";
+        level = "HIGH";
+
+    }
+    else if (
+        cores < 4 ||
+        (memory !== null && memory < 4)
+    ) {
+
+        level = "LOW";
 
     }
 
 
-    if (
-        cores >= 4 &&
-        (!memory || memory >= 4)
-    ) {
-
-        return "MEDIUM";
-
-    }
+    let platform =
+        navigator.userAgentData?.platform ||
+        navigator.platform ||
+        "Unknown";
 
 
-    return "LOW";
+    return {
+        level,
+        cores,
+        memory,
+        platform
+    };
 
 }
-
 
 
 /* ============================================================
@@ -335,7 +385,8 @@ function calculateAdaptiveMode(
 ) {
 
     /*
-       Weakest-link rule
+        LOW + anything
+        = LOW
     */
 
     if (
@@ -343,136 +394,207 @@ function calculateAdaptiveMode(
         device === "LOW"
     ) {
 
-        return "LOW";
+        return {
+
+            tier: "LOW",
+
+            mode: "LIGHTWEIGHT",
+
+            imageWidth: 320,
+
+            imageQuality: 40,
+
+            animations: "OFF",
+
+            effects3D: "OFF",
+
+            prefetch: "OFF",
+
+            recommendations: "OFF",
+
+            jsStrategy: "ESSENTIAL",
+
+            description:
+                "Lightweight mode. Compressed images, essential JavaScript and no heavy visual effects."
+
+        };
 
     }
 
+
+    /*
+        HIGH + HIGH
+        = HIGH
+    */
 
     if (
         network === "HIGH" &&
         device === "HIGH"
     ) {
 
-        return "HIGH";
-
-    }
-
-
-    return "MEDIUM";
-
-}
-
-
-
-/* ============================================================
-   MODE CONFIG
-============================================================ */
-
-function getModeConfig(mode) {
-
-    if (mode === "HIGH") {
-
         return {
 
-            title:
-                "FULL EXPERIENCE",
+            tier: "HIGH",
 
-            imageWidth:
-                1000,
+            mode: "FULL EXPERIENCE",
 
-            imageQuality:
-                85,
+            imageWidth: 1000,
 
-            javascript:
-                "FULL",
+            imageQuality: 85,
 
-            animations:
-                "FULL",
+            animations: "FULL",
 
-            prefetch:
-                "ON",
+            effects3D: "FULL",
 
-            recommendations:
-                true,
+            prefetch: "ON",
+
+            recommendations: "ON",
+
+            jsStrategy: "FULL",
 
             description:
-                "High-capability experience enabled with rich animations, enhanced hover effects, high-quality images and prefetching."
+                "Premium mode. High-quality images, 3D hover, animated background and proactive prefetching."
 
         };
 
     }
 
 
-    if (mode === "LOW") {
-
-        return {
-
-            title:
-                "LIGHTWEIGHT",
-
-            imageWidth:
-                320,
-
-            imageQuality:
-                40,
-
-            javascript:
-                "ESSENTIAL",
-
-            animations:
-                "MINIMAL",
-
-            prefetch:
-                "OFF",
-
-            recommendations:
-                false,
-
-            description:
-                "Lightweight experience enabled. Heavy animations and unnecessary effects are removed to reduce processing cost."
-
-        };
-
-    }
-
+    /*
+        Everything else
+        = MEDIUM
+    */
 
     return {
 
-        title:
-            "BALANCED",
+        tier: "MEDIUM",
 
-        imageWidth:
-            600,
+        mode: "BALANCED",
 
-        imageQuality:
-            65,
+        imageWidth: 600,
 
-        javascript:
-            "BALANCED",
+        imageQuality: 65,
 
-        animations:
-            "REDUCED",
+        animations: "REDUCED",
 
-        prefetch:
-            "OFF",
+        effects3D: "OFF",
 
-        recommendations:
-            true,
+        prefetch: "OFF",
+
+        recommendations: "LIMITED",
+
+        jsStrategy: "BALANCED",
 
         description:
-            "Balanced experience with moderate image quality and restrained animations."
+            "Balanced mode. Medium images and subtle hover effects with restrained JavaScript."
 
     };
 
 }
 
 
+/* ============================================================
+   IMAGE ADAPTATION
+============================================================ */
+
+function getAdaptiveImageURL(
+    url,
+    config
+) {
+
+    if (!url) {
+        return "";
+    }
+
+
+    let result = url;
+
+
+    if (/w=\d+/i.test(result)) {
+
+        result =
+            result.replace(
+                /w=\d+/i,
+                `w=${config.imageWidth}`
+            );
+
+    }
+
+
+    if (/q=\d+/i.test(result)) {
+
+        result =
+            result.replace(
+                /q=\d+/i,
+                `q=${config.imageQuality}`
+            );
+
+    }
+
+
+    return result;
+
+}
+
+
+/* ============================================================
+   PREFETCH
+============================================================ */
+
+function applyPrefetch(config) {
+
+    const old =
+        $("adaptivePrefetch");
+
+    if (old) {
+        old.remove();
+    }
+
+
+    if (
+        config.prefetch !== "ON" ||
+        !products.length
+    ) {
+
+        return;
+
+    }
+
+
+    const first =
+        products[0];
+
+
+    const link =
+        document.createElement("link");
+
+
+    link.id =
+        "adaptivePrefetch";
+
+    link.rel =
+        "prefetch";
+
+    link.as =
+        "image";
+
+    link.href =
+        getAdaptiveImageURL(
+            first.image,
+            config
+        );
+
+
+    document.head.appendChild(link);
+
+}
+
 
 /* ============================================================
    APPLY VISUAL MODE
 ============================================================ */
 
-function applyVisualMode(mode) {
+function applyVisualMode(config) {
 
     document.body.classList.remove(
         "high-mode",
@@ -482,201 +604,31 @@ function applyVisualMode(mode) {
 
 
     document.body.classList.add(
-        `${mode.toLowerCase()}-mode`
+        config.tier.toLowerCase() + "-mode"
     );
 
 
-    document.body.dataset.adaptiveMode =
-        mode;
+    const recommendationSection =
+        $("recommendations");
 
 
-    currentMode =
-        mode;
+    if (recommendationSection) {
 
-}
-
-
-
-/* ============================================================
-   IMAGE ADAPTATION
-============================================================ */
-
-function getAdaptiveImageURL(
-    original,
-    config
-) {
-
-    try {
-
-        const url =
-            new URL(original);
-
-
-        url.searchParams.set(
-            "w",
-            config.imageWidth
-        );
-
-
-        url.searchParams.set(
-            "q",
-            config.imageQuality
-        );
-
-
-        return url.toString();
-
-    }
-    catch {
-
-        return original;
+        recommendationSection.style.display =
+            config.recommendations === "OFF"
+                ? "none"
+                : "";
 
     }
 
 }
 
 
-
 /* ============================================================
-   PREFETCH
+   CONFIG PANEL UPDATE
 ============================================================ */
 
-function applyPrefetch(config) {
-
-    document
-        .querySelectorAll(
-            "link[data-adaptive-prefetch]"
-        )
-        .forEach(
-            element =>
-                element.remove()
-        );
-
-
-    if (
-        config.prefetch !== "ON"
-    ) {
-
-        return;
-
-    }
-
-
-    if (
-        products.length < 2
-    ) {
-
-        return;
-
-    }
-
-
-    const link =
-        document.createElement("link");
-
-
-    link.rel =
-        "prefetch";
-
-
-    link.as =
-        "image";
-
-
-    link.href =
-        getAdaptiveImageURL(
-            products[1].image,
-            config
-        );
-
-
-    link.dataset.adaptivePrefetch =
-        "true";
-
-
-    document.head.appendChild(
-        link
-    );
-
-}
-
-
-
-/* ============================================================
-   ADAPTIVE ENGINE
-============================================================ */
-
-function updateAdaptiveEngine() {
-
-    detectedNetwork =
-        detectNetwork();
-
-
-    detectedDevice =
-        detectDevice();
-
-
-    const effectiveNetwork =
-        networkSetting === "AUTO"
-            ? detectedNetwork
-            : networkSetting;
-
-
-    const effectiveDevice =
-        deviceSetting === "AUTO"
-            ? detectedDevice
-            : deviceSetting;
-
-
-    const mode =
-        calculateAdaptiveMode(
-            effectiveNetwork,
-            effectiveDevice
-        );
-
-
-    const config =
-        getModeConfig(mode);
-
-
-    currentConfig =
-        config;
-
-
-    /*
-       DETECT
-       ↓
-       DECIDE
-       ↓
-       ADAPT
-    */
-
-    applyVisualMode(mode);
-
-
-    updateAdaptiveUI(
-        effectiveNetwork,
-        effectiveDevice,
-        config
-    );
-
-
-    applyPrefetch(config);
-
-
-    updateProductText(
-        config
-    );
-
-}
-
-
-
-/* ============================================================
-   ADAPTIVE UI
-============================================================ */
-
-function updateAdaptiveUI(
+function updateConfigPanel(
     network,
     device,
     config
@@ -685,7 +637,7 @@ function updateAdaptiveUI(
     if ($("detectedNetwork")) {
 
         $("detectedNetwork").textContent =
-            `Detected: ${detectedNetwork}`;
+            `Detected: ${network}`;
 
     }
 
@@ -693,7 +645,7 @@ function updateAdaptiveUI(
     if ($("detectedDevice")) {
 
         $("detectedDevice").textContent =
-            `Detected: ${detectedDevice}`;
+            `Detected: ${device}`;
 
     }
 
@@ -701,7 +653,7 @@ function updateAdaptiveUI(
     if ($("deliveryBadge")) {
 
         $("deliveryBadge").textContent =
-            `${network} / ${device}`;
+            config.tier;
 
     }
 
@@ -709,7 +661,7 @@ function updateAdaptiveUI(
     if ($("deliveryMode")) {
 
         $("deliveryMode").textContent =
-            config.title;
+            config.mode;
 
     }
 
@@ -733,7 +685,7 @@ function updateAdaptiveUI(
     if ($("detailJS")) {
 
         $("detailJS").textContent =
-            config.javascript;
+            config.jsStrategy;
 
     }
 
@@ -773,139 +725,156 @@ function updateAdaptiveUI(
     if ($("shopStatus")) {
 
         $("shopStatus").textContent =
-            `${network} Network · ${device} Device → ${config.title}`;
+            `${config.tier} · ${network} network · ${device} device`;
+
+    }
+
+
+    if ($("productMode")) {
+
+        $("productMode").textContent =
+            `${config.tier} delivery · ${config.imageWidth}px images · ${config.animations} animation`;
 
     }
 
 }
 
 
+/* ============================================================
+   CURRENT CONDITIONS
+============================================================ */
+
+function getSelectedNetwork() {
+
+    return networkSetting === "AUTO"
+        ? currentNetwork.level
+        : networkSetting;
+
+}
+
+
+function getSelectedDevice() {
+
+    return deviceSetting === "AUTO"
+        ? currentDevice.level
+        : deviceSetting;
+
+}
+
+
+function updateAdaptiveEngine() {
+
+    currentNetwork =
+        detectNetwork();
+
+    currentDevice =
+        detectDevice();
+
+
+    const network =
+        getSelectedNetwork();
+
+    const device =
+        getSelectedDevice();
+
+
+    currentConfig =
+        calculateAdaptiveMode(
+            network,
+            device
+        );
+
+
+    applyVisualMode(
+        currentConfig
+    );
+
+
+    applyPrefetch(
+        currentConfig
+    );
+
+
+    renderProducts();
+
+    renderRecommendations();
+
+
+    updateConfigPanel(
+        network,
+        device,
+        currentConfig
+    );
+
+}
+
 
 /* ============================================================
    PRODUCT RENDERING
 ============================================================ */
+
+function getFilteredProducts() {
+
+    return products.filter(product => {
+
+        const categoryMatch =
+            activeCategory === "ALL" ||
+            String(product.category).toUpperCase() ===
+            activeCategory;
+
+
+        const text =
+            (
+                product.name +
+                " " +
+                product.category +
+                " " +
+                product.description
+            ).toLowerCase();
+
+
+        const searchMatch =
+            !searchTerm ||
+            text.includes(
+                searchTerm.toLowerCase()
+            );
+
+
+        return (
+            categoryMatch &&
+            searchMatch
+        );
+
+    });
+
+}
+
 
 function renderProducts() {
 
     const grid =
         $("productGrid");
 
-
     if (!grid) {
-
         return;
-
     }
 
 
-    let filtered =
-        [...products];
-
-
-    if (
-        activeCategory !== "ALL"
-    ) {
-
-        filtered =
-            filtered.filter(
-                product =>
-                    product.category ===
-                    activeCategory
-            );
-
-    }
-
-
-    if (
-        searchText.trim()
-    ) {
-
-        const query =
-            searchText
-                .trim()
-                .toLowerCase();
-
-
-        filtered =
-            filtered.filter(
-                product =>
-
-                    product.name
-                        .toLowerCase()
-                        .includes(query)
-
-                    ||
-
-                    product.category
-                        .toLowerCase()
-                        .includes(query)
-
-                    ||
-
-                    product.description
-                        .toLowerCase()
-                        .includes(query)
-            );
-
-    }
-
-
-    if (!filtered.length) {
-
-        grid.innerHTML =
-            "";
-
-
-        if ($("noResults")) {
-
-            $("noResults").style.display =
-                "block";
-
-        }
-
-
-        if ($("productCount")) {
-
-            $("productCount").textContent =
-                "0 products";
-
-        }
-
-
-        return;
-
-    }
-
-
-    if ($("noResults")) {
-
-        $("noResults").style.display =
-            "none";
-
-    }
-
-
-    if ($("productCount")) {
-
-        $("productCount").textContent =
-            `${filtered.length} products`;
-
-    }
+    const list =
+        getFilteredProducts();
 
 
     grid.innerHTML =
-        filtered.map(
-            product => {
+        list.map(product => {
 
-                const image =
-                    getAdaptiveImageURL(
-                        product.image,
-                        currentConfig ||
-                        getModeConfig("MEDIUM")
-                    );
+            const image =
+                getAdaptiveImageURL(
+                    product.image,
+                    currentConfig
+                );
 
 
-                return `
+            return `
 
                 <article
                     class="product"
@@ -917,18 +886,15 @@ function renderProducts() {
                         data-product="${product.id}"
                     >
 
-                        <span class="product-badge">
-                            ${escapeHTML(
-                                product.badge
-                            )}
-                        </span>
-
                         <img
                             src="${escapeHTML(image)}"
                             alt="${escapeHTML(product.name)}"
                             loading="lazy"
-                            decoding="async"
                         >
+
+                        <span class="product-badge">
+                            ${escapeHTML(product.badge || "FEATURED")}
+                        </span>
 
                     </div>
 
@@ -938,29 +904,23 @@ function renderProducts() {
                         <div class="product-top">
 
                             <span class="product-category">
-                                ${escapeHTML(
-                                    product.category
-                                )}
+                                ${escapeHTML(product.category)}
                             </span>
 
                             <span class="product-rating">
-                                ★ ${product.rating}
+                                ⭐ ${product.rating}
                             </span>
 
                         </div>
 
 
                         <h3>
-                            ${escapeHTML(
-                                product.name
-                            )}
+                            ${escapeHTML(product.name)}
                         </h3>
 
 
                         <p class="product-description">
-                            ${escapeHTML(
-                                product.description
-                            )}
+                            ${escapeHTML(product.description)}
                         </p>
 
 
@@ -969,7 +929,6 @@ function renderProducts() {
                             <strong class="product-price">
                                 ${money(product.price)}
                             </strong>
-
 
                             <button
                                 class="add-cart"
@@ -984,41 +943,29 @@ function renderProducts() {
 
                 </article>
 
-                `;
+            `;
 
-            }
-        ).join("");
-
-
-    renderRecommendations();
+        }).join("");
 
 
-    updateProductText(
-        currentConfig
-    );
+    if ($("productCount")) {
 
-}
-
-
-
-/* ============================================================
-   PRODUCT MODE TEXT
-============================================================ */
-
-function updateProductText(config) {
-
-    if (!$("productMode") || !config) {
-
-        return;
+        $("productCount").textContent =
+            `${list.length} products`;
 
     }
 
 
-    $("productMode").textContent =
-        `${config.title} · Images ${config.imageQuality}% · ${config.animations} animations`;
+    if ($("noResults")) {
+
+        $("noResults").style.display =
+            list.length
+                ? "none"
+                : "block";
+
+    }
 
 }
-
 
 
 /* ============================================================
@@ -1027,75 +974,57 @@ function updateProductText(config) {
 
 function renderRecommendations() {
 
-    const container =
+    const grid =
         $("recommendationGrid");
 
-
-    const section =
-        $("recommendations");
-
-
-    if (!container || !section) {
-
+    if (!grid) {
         return;
-
     }
 
 
     if (
-        !currentConfig ||
-        !currentConfig.recommendations
+        currentConfig?.recommendations === "OFF"
     ) {
 
-        section.style.display =
-            "none";
-
-        container.innerHTML =
-            "";
+        grid.innerHTML = "";
 
         return;
 
     }
 
 
-    section.style.display =
-        "flex";
-
-
     const count =
-        currentMode === "HIGH"
-            ? 3
-            : 1;
+        currentConfig?.tier === "HIGH"
+            ? 4
+            : 2;
 
 
-    container.innerHTML =
+    grid.innerHTML =
         products
-            .slice(0, count)
-            .map(
-                product => {
+            .slice(0,count)
+            .map(product => {
 
-                    const image =
-                        getAdaptiveImageURL(
-                            product.image,
-                            currentConfig
-                        );
+                const image =
+                    getAdaptiveImageURL(
+                        product.image,
+                        currentConfig
+                    );
 
 
-                    return `
+                return `
 
                     <div class="rec-card">
 
                         <img
                             src="${escapeHTML(image)}"
                             alt="${escapeHTML(product.name)}"
+                            loading="lazy"
                         >
 
                         <div class="rec-info">
 
                             <strong>
-                                ${escapeHTML(
-                                    product.name
-                                )}
+                                ${escapeHTML(product.name)}
                             </strong>
 
                             <span>
@@ -1108,59 +1037,38 @@ function renderRecommendations() {
                             class="rec-btn"
                             data-rec-add="${product.id}"
                         >
-                            +
+                            Add
                         </button>
 
                     </div>
 
-                    `;
+                `;
 
-                }
-            )
-            .join("");
+            }).join("");
 
 }
 
 
-
 /* ============================================================
-   LOAD BACKEND PRODUCTS
+   BACKEND
 ============================================================ */
 
 async function loadProducts() {
 
     try {
 
-        const controller =
-            new AbortController();
-
-
-        const timeout =
-            setTimeout(
-                () => controller.abort(),
-                5000
-            );
-
-
         const response =
             await fetch(
                 `${API_BASE_URL}/products`,
                 {
                     signal:
-                        controller.signal
+                        AbortSignal.timeout(4000)
                 }
             );
 
 
-        clearTimeout(timeout);
-
-
         if (!response.ok) {
-
-            throw new Error(
-                "Backend unavailable"
-            );
-
+            throw new Error("Backend unavailable");
         }
 
 
@@ -1168,99 +1076,38 @@ async function loadProducts() {
             await response.json();
 
 
-        if (
-            Array.isArray(data) &&
-            data.length
-        ) {
+        if (Array.isArray(data) && data.length) {
 
             products =
-                data.map(
-                    (item, index) => {
-
-                        const fallback =
-                            fallbackProducts[
-                                index %
-                                fallbackProducts.length
-                            ];
-
-
-                        return {
-
-                            id:
-                                item.id ??
-                                fallback.id,
-
-                            name:
-                                item.name ??
-                                fallback.name,
-
-                            category:
-                                String(
-                                    item.category ??
-                                    fallback.category
-                                ).toUpperCase(),
-
-                            price:
-                                Number(
-                                    item.price ??
-                                    fallback.price
-                                ),
-
-                            rating:
-                                Number(
-                                    item.rating ??
-                                    fallback.rating
-                                ),
-
-                            reviews:
-                                Number(
-                                    item.reviews ??
-                                    fallback.reviews
-                                ),
-
-                            badge:
-                                item.badge ??
-                                fallback.badge,
-
-                            description:
-                                item.description ??
-                                fallback.description,
-
-                            image:
-                                item.imageUrl ??
-                                item.image ??
-                                fallback.image
-
-                        };
-
-                    }
-                );
+                data;
 
         }
         else {
 
             products =
-                [...fallbackProducts];
+                fallbackProducts;
 
         }
 
     }
-    catch (error) {
+    catch {
 
         console.warn(
-            "[AdaptiveShop] Using fallback catalog"
+            "[AdaptiveShop] Backend unavailable. Using local catalog."
         );
 
+
         products =
-            [...fallbackProducts];
+            fallbackProducts;
 
     }
 
 
     renderProducts();
 
-}
+    renderRecommendations();
 
+}
 
 
 /* ============================================================
@@ -1270,43 +1117,42 @@ async function loadProducts() {
 function setupCategories() {
 
     document
-        .querySelectorAll(
-            ".category-card"
-        )
-        .forEach(
-            card => {
+        .querySelectorAll(".category-card")
+        .forEach(button => {
 
-                card.addEventListener(
-                    "click",
-                    () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                        activeCategory =
-                            card.dataset.category;
-
-
-                        document
-                            .querySelectorAll(
-                                ".category-card"
-                            )
-                            .forEach(
-                                item =>
-                                    item.classList.toggle(
-                                        "active",
-                                        item === card
-                                    )
-                            );
+                    document
+                        .querySelectorAll(
+                            ".category-card"
+                        )
+                        .forEach(
+                            item =>
+                                item.classList.remove(
+                                    "active"
+                                )
+                        );
 
 
-                        renderProducts();
+                    button.classList.add(
+                        "active"
+                    );
 
-                    }
-                );
 
-            }
-        );
+                    activeCategory =
+                        button.dataset.category;
+
+
+                    renderProducts();
+
+                }
+            );
+
+        });
 
 }
-
 
 
 /* ============================================================
@@ -1315,32 +1161,20 @@ function setupCategories() {
 
 function setupSearch() {
 
-    const input =
-        $("searchInput");
+    $("searchInput")
+        ?.addEventListener(
+            "input",
+            event => {
 
+                searchTerm =
+                    event.target.value.trim();
 
-    if (!input) {
+                renderProducts();
 
-        return;
-
-    }
-
-
-    input.addEventListener(
-        "input",
-        event => {
-
-            searchText =
-                event.target.value;
-
-
-            renderProducts();
-
-        }
-    );
+            }
+        );
 
 }
-
 
 
 /* ============================================================
@@ -1349,95 +1183,84 @@ function setupSearch() {
 
 function setupConfigOptions() {
 
-
     document
-        .querySelectorAll(
-            ".network-option"
-        )
-        .forEach(
-            button => {
+        .querySelectorAll(".network-option")
+        .forEach(button => {
 
-                button.addEventListener(
-                    "click",
-                    () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                        networkSetting =
-                            button.dataset.value;
-
-
-                        document
-                            .querySelectorAll(
-                                ".network-option"
-                            )
-                            .forEach(
-                                item =>
-                                    item.classList.remove(
-                                        "active"
-                                    )
-                            );
-
-
-                        button.classList.add(
-                            "active"
+                    document
+                        .querySelectorAll(
+                            ".network-option"
+                        )
+                        .forEach(
+                            item =>
+                                item.classList.remove(
+                                    "active"
+                                )
                         );
 
 
-                        updateAdaptiveEngine();
+                    button.classList.add(
+                        "active"
+                    );
 
-                    }
-                );
 
-            }
-        );
+                    networkSetting =
+                        button.dataset.value;
 
+
+                    updateAdaptiveEngine();
+
+                }
+            );
+
+        });
 
 
     document
-        .querySelectorAll(
-            ".device-option"
-        )
-        .forEach(
-            button => {
+        .querySelectorAll(".device-option")
+        .forEach(button => {
 
-                button.addEventListener(
-                    "click",
-                    () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                        deviceSetting =
-                            button.dataset.value;
-
-
-                        document
-                            .querySelectorAll(
-                                ".device-option"
-                            )
-                            .forEach(
-                                item =>
-                                    item.classList.remove(
-                                        "active"
-                                    )
-                            );
-
-
-                        button.classList.add(
-                            "active"
+                    document
+                        .querySelectorAll(
+                            ".device-option"
+                        )
+                        .forEach(
+                            item =>
+                                item.classList.remove(
+                                    "active"
+                                )
                         );
 
 
-                        updateAdaptiveEngine();
+                    button.classList.add(
+                        "active"
+                    );
 
-                    }
-                );
 
-            }
-        );
+                    deviceSetting =
+                        button.dataset.value;
+
+
+                    updateAdaptiveEngine();
+
+                }
+            );
+
+        });
 
 }
 
 
-
 /* ============================================================
-   CONFIG MODAL
+   CONFIG
 ============================================================ */
 
 function openConfig() {
@@ -1508,111 +1331,6 @@ function setupConfig() {
 }
 
 
-
-/* ============================================================
-   HIGH-END 3D POINTER EFFECT
-============================================================ */
-
-function setupHighEndHover() {
-
-    const grid =
-        $("productGrid");
-
-
-    if (!grid) {
-
-        return;
-
-    }
-
-
-    grid.addEventListener(
-        "pointermove",
-        event => {
-
-            if (
-                !document.body.classList.contains(
-                    "high-mode"
-                )
-            ) {
-
-                return;
-
-            }
-
-
-            const card =
-                event.target.closest(
-                    ".product"
-                );
-
-
-            if (!card) {
-
-                return;
-
-            }
-
-
-            const rect =
-                card.getBoundingClientRect();
-
-
-            const x =
-                event.clientX -
-                rect.left;
-
-
-            const y =
-                event.clientY -
-                rect.top;
-
-
-            const rotateY =
-                ((x / rect.width) - .5) * 7;
-
-
-            const rotateX =
-                ((y / rect.height) - .5) * -5;
-
-
-            card.style.transform =
-                `
-                translateY(-9px)
-                rotateX(${rotateX}deg)
-                rotateY(${rotateY}deg)
-                scale(1.02)
-                `;
-
-        }
-    );
-
-
-    grid.addEventListener(
-        "pointerleave",
-        event => {
-
-            const card =
-                event.target.closest(
-                    ".product"
-                );
-
-
-            if (card) {
-
-                card.style.transform =
-                    "";
-
-            }
-
-        },
-        true
-    );
-
-}
-
-
-
 /* ============================================================
    PRODUCT MODAL
 ============================================================ */
@@ -1628,61 +1346,62 @@ function openProduct(id) {
 
 
     if (!product) {
-
         return;
-
     }
 
 
     const image =
         getAdaptiveImageURL(
             product.image,
-            currentConfig ||
-            getModeConfig("MEDIUM")
+            currentConfig
         );
 
 
     $("productModalContent").innerHTML = `
 
-        <div class="product-modal-image">
+        <div class="product-modal-content">
 
-            <img
-                src="${escapeHTML(image)}"
-                alt="${escapeHTML(product.name)}"
-            >
+            <div class="product-modal-image">
 
-        </div>
+                <img
+                    src="${escapeHTML(image)}"
+                    alt="${escapeHTML(product.name)}"
+                >
+
+            </div>
 
 
-        <div class="product-modal-info">
+            <div class="product-modal-info">
 
-            <span class="product-category">
-                ${escapeHTML(product.category)}
-            </span>
+                <span class="product-category">
+                    ${escapeHTML(product.category)}
+                </span>
 
-            <h2>
-                ${escapeHTML(product.name)}
-            </h2>
+                <h2>
+                    ${escapeHTML(product.name)}
+                </h2>
 
-            <p>
-                ${escapeHTML(product.description)}
-            </p>
+                <p>
+                    ${escapeHTML(product.description)}
+                </p>
 
-            <p>
-                ⭐ ${product.rating}
-                · ${product.reviews} reviews
-            </p>
+                <p>
+                    ⭐ ${product.rating}
+                    · ${product.reviews} reviews
+                </p>
 
-            <strong class="modal-price">
-                ${money(product.price)}
-            </strong>
+                <strong class="modal-price">
+                    ${money(product.price)}
+                </strong>
 
-            <button
-                class="primary-button"
-                data-modal-add="${product.id}"
-            >
-                Add to Cart
-            </button>
+                <button
+                    class="primary-button"
+                    data-modal-add="${product.id}"
+                >
+                    Add to Cart
+                </button>
+
+            </div>
 
         </div>
 
@@ -1703,78 +1422,46 @@ function closeProduct() {
 }
 
 
-
-/* ============================================================
-   PRODUCT EVENTS
-============================================================ */
-
 function setupProductEvents() {
 
-    const grid =
-        $("productGrid");
+    $("productGrid")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                const add =
+                    event.target.closest(
+                        "[data-add]"
+                    );
 
 
-    if (!grid) {
+                if (add) {
 
-        return;
+                    addToCart(
+                        add.dataset.add
+                    );
 
-    }
+                    return;
 
-
-    grid.addEventListener(
-        "click",
-        event => {
-
-            const add =
-                event.target.closest(
-                    "[data-add]"
-                );
+                }
 
 
-            if (add) {
-
-                addToCart(
-                    add.dataset.add
-                );
-
-                return;
-
-            }
+                const card =
+                    event.target.closest(
+                        ".product"
+                    );
 
 
-            const productImage =
-                event.target.closest(
-                    "[data-product]"
-                );
+                if (card) {
 
-
-            const productCard =
-                event.target.closest(
-                    ".product"
-                );
-
-
-            if (
-                productImage ||
-                productCard
-            ) {
-
-                const id =
-                    productCard?.dataset.id ||
-                    productImage?.dataset.product;
-
-
-                if (id) {
-
-                    openProduct(id);
+                    openProduct(
+                        card.dataset.id
+                    );
 
                 }
 
             }
-
-        }
-    );
-
+        );
 
 
     $("productOverlay")
@@ -1804,7 +1491,6 @@ function setupProductEvents() {
 }
 
 
-
 /* ============================================================
    CART
 ============================================================ */
@@ -1820,17 +1506,13 @@ function addToCart(id) {
 
 
     if (!product) {
-
         return;
-
     }
 
 
     cart.push(product);
 
-
     updateCart();
-
 
     showToast(
         `${product.name} added to cart`
@@ -1850,9 +1532,7 @@ function updateCart() {
 
 
     if (!container) {
-
         return;
-
     }
 
 
@@ -1872,8 +1552,10 @@ function updateCart() {
 
         `;
 
+
         $("cartTotal").textContent =
             "₹0";
+
 
         return;
 
@@ -1885,54 +1567,48 @@ function updateCart() {
 
     container.innerHTML =
         cart.map(
-            (product, index) => {
+            (product,index) => {
 
                 total +=
                     Number(product.price);
 
 
+                const image =
+                    getAdaptiveImageURL(
+                        product.image,
+                        currentConfig
+                    );
+
+
                 return `
 
-                <div class="cart-item">
+                    <div class="cart-item">
 
-                    <img
-                        src="${escapeHTML(
-                            getAdaptiveImageURL(
-                                product.image,
-                                currentConfig
-                            )
-                        )}"
-                        alt="${escapeHTML(
-                            product.name
-                        )}"
-                    >
+                        <img
+                            src="${escapeHTML(image)}"
+                            alt="${escapeHTML(product.name)}"
+                        >
 
+                        <div class="cart-item-info">
 
-                    <div class="cart-item-info">
+                            <strong>
+                                ${escapeHTML(product.name)}
+                            </strong>
 
-                        <strong>
-                            ${escapeHTML(
-                                product.name
-                            )}
-                        </strong>
+                            <span>
+                                ${money(product.price)}
+                            </span>
 
-                        <span>
-                            ${money(
-                                product.price
-                            )}
-                        </span>
+                        </div>
+
+                        <button
+                            class="remove-cart"
+                            data-remove="${index}"
+                        >
+                            ×
+                        </button>
 
                     </div>
-
-
-                    <button
-                        class="remove-cart"
-                        data-remove="${index}"
-                    >
-                        ×
-                    </button>
-
-                </div>
 
                 `;
 
@@ -2003,20 +1679,12 @@ function setupCart() {
 
 
                 if (!button) {
-
                     return;
-
                 }
 
 
-                const index =
-                    Number(
-                        button.dataset.remove
-                    );
-
-
                 cart.splice(
-                    index,
+                    Number(button.dataset.remove),
                     1
                 );
 
@@ -2045,7 +1713,6 @@ function setupCart() {
 
                 cart = [];
 
-
                 updateCart();
 
 
@@ -2065,40 +1732,39 @@ function setupCart() {
 }
 
 
-
 /* ============================================================
-   RECOMMENDATION EVENTS
+   RECOMMENDATION + MODAL EVENTS
 ============================================================ */
 
 document.addEventListener(
     "click",
     event => {
 
-        const button =
+        const recommendation =
             event.target.closest(
                 "[data-rec-add]"
             );
 
 
-        if (button) {
+        if (recommendation) {
 
             addToCart(
-                button.dataset.recAdd
+                recommendation.dataset.recAdd
             );
 
         }
 
 
-        const modalButton =
+        const modalAdd =
             event.target.closest(
                 "[data-modal-add]"
             );
 
 
-        if (modalButton) {
+        if (modalAdd) {
 
             addToCart(
-                modalButton.dataset.modalAdd
+                modalAdd.dataset.modalAdd
             );
 
             closeProduct();
@@ -2108,6 +1774,108 @@ document.addEventListener(
     }
 );
 
+
+/* ============================================================
+   HIGH MODE POINTER TILT
+============================================================ */
+
+function setupHighModeTilt() {
+
+    const grid =
+        $("productGrid");
+
+
+    if (!grid) {
+        return;
+    }
+
+
+    grid.addEventListener(
+        "pointermove",
+        event => {
+
+            if (
+                !document.body.classList.contains(
+                    "high-mode"
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            const card =
+                event.target.closest(
+                    ".product"
+                );
+
+
+            if (!card) {
+                return;
+            }
+
+
+            const rect =
+                card.getBoundingClientRect();
+
+
+            const x =
+                (event.clientX - rect.left) /
+                rect.width;
+
+
+            const y =
+                (event.clientY - rect.top) /
+                rect.height;
+
+
+            const rotateY =
+                (x - .5) * 7;
+
+
+            const rotateX =
+                (y - .5) * -5;
+
+
+            card.style.transform =
+                `
+                translateY(-12px)
+                rotateX(${rotateX}deg)
+                rotateY(${rotateY}deg)
+                scale(1.025)
+                `;
+
+        }
+    );
+
+
+    grid.addEventListener(
+        "pointerout",
+        event => {
+
+            const card =
+                event.target.closest(
+                    ".product"
+                );
+
+
+            if (
+                card &&
+                !card.contains(
+                    event.relatedTarget
+                )
+            ) {
+
+                card.style.transform =
+                    "";
+
+            }
+
+        }
+    );
+
+}
 
 
 /* ============================================================
@@ -2121,16 +1889,12 @@ function showToast(message) {
 
 
     if (!container) {
-
         return;
-
     }
 
 
     const toast =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
 
     toast.className =
@@ -2147,16 +1911,11 @@ function showToast(message) {
 
 
     setTimeout(
-        () => {
-
-            toast.remove();
-
-        },
+        () => toast.remove(),
         2200
     );
 
 }
-
 
 
 /* ============================================================
@@ -2165,23 +1924,16 @@ function showToast(message) {
 
 function setupPerformanceTelemetry() {
 
-    if (
-        !window.PerformanceObserver
-    ) {
-
+    if (!window.PerformanceObserver) {
         return;
-
     }
 
 
-
-    /* =========================
-       LCP
-    ========================= */
+    /* LCP */
 
     try {
 
-        const lcpObserver =
+        const observer =
             new PerformanceObserver(
                 list => {
 
@@ -2212,51 +1964,41 @@ function setupPerformanceTelemetry() {
             );
 
 
-        lcpObserver.observe({
-
+        observer.observe({
             type:
                 "largest-contentful-paint",
-
             buffered:
                 true
-
         });
 
     }
     catch {}
 
 
-
-    /* =========================
-       CLS
-    ========================= */
+    /* CLS */
 
     try {
 
-        let cls =
-            0;
+        let cls = 0;
 
 
-        const clsObserver =
+        const observer =
             new PerformanceObserver(
                 list => {
 
-                    list
-                        .getEntries()
-                        .forEach(
-                            entry => {
+                    list.getEntries()
+                        .forEach(entry => {
 
-                                if (
-                                    !entry.hadRecentInput
-                                ) {
+                            if (
+                                !entry.hadRecentInput
+                            ) {
 
-                                    cls +=
-                                        entry.value;
-
-                                }
+                                cls +=
+                                    entry.value;
 
                             }
-                        );
+
+                        });
 
 
                     if ($("metricCLS")) {
@@ -2271,64 +2013,52 @@ function setupPerformanceTelemetry() {
             );
 
 
-        clsObserver.observe({
-
+        observer.observe({
             type:
                 "layout-shift",
-
             buffered:
                 true
-
         });
 
     }
     catch {}
 
 
-
-    /* =========================
-       INP
-    ========================= */
+    /*
+        INP-style event measurement.
+        Uses PerformanceEventTiming entries.
+    */
 
     try {
 
-        const inpObserver =
+        let longestInteraction = 0;
+
+
+        const observer =
             new PerformanceObserver(
                 list => {
 
-                    const entries =
-                        list.getEntries();
+                    list.getEntries()
+                        .forEach(entry => {
 
-
-                    if (!entries.length) {
-
-                        return;
-
-                    }
-
-
-                    /*
-                       INP uses the longest
-                       interaction observed.
-                    */
-
-                    const longest =
-                        entries.reduce(
-                            (max, entry) =>
+                            longestInteraction =
                                 Math.max(
-                                    max,
-                                    entry.duration
-                                ),
-                            0
-                        );
+                                    longestInteraction,
+                                    entry.duration || 0
+                                );
+
+                        });
 
 
-                    if ($("metricINP")) {
+                    if (
+                        $("metricINP") &&
+                        longestInteraction > 0
+                    ) {
 
                         $("metricINP")
                             .textContent =
                             `${Math.round(
-                                longest
+                                longestInteraction
                             )} ms`;
 
                     }
@@ -2337,27 +2067,20 @@ function setupPerformanceTelemetry() {
             );
 
 
-        inpObserver.observe({
-
+        observer.observe({
             type:
                 "event",
-
             buffered:
                 true,
-
             durationThreshold:
                 40
-
         });
 
     }
     catch {}
 
 
-
-    /* =========================
-       NAVIGATION
-    ========================= */
+    /* Navigation + Resources */
 
     window.addEventListener(
         "load",
@@ -2372,17 +2095,17 @@ function setupPerformanceTelemetry() {
                         )[0];
 
 
-                    if (navigation) {
+                    if (
+                        navigation &&
+                        $("metricLoad")
+                    ) {
 
-                        if ($("metricLoad")) {
-
-                            $("metricLoad")
-                                .textContent =
-                                `${Math.round(
-                                    navigation.loadEventEnd
-                                )} ms`;
-
-                        }
+                        $("metricLoad")
+                            .textContent =
+                            `${Math.round(
+                                navigation.loadEventEnd -
+                                navigation.startTime
+                            )} ms`;
 
                     }
 
@@ -2393,8 +2116,7 @@ function setupPerformanceTelemetry() {
                         );
 
 
-                    let totalBytes =
-                        0;
+                    let totalBytes = 0;
 
 
                     resources.forEach(
@@ -2402,6 +2124,7 @@ function setupPerformanceTelemetry() {
 
                             totalBytes +=
                                 resource.transferSize ||
+                                resource.encodedBodySize ||
                                 0;
 
                         }
@@ -2413,7 +2136,8 @@ function setupPerformanceTelemetry() {
                         $("metricTransfer")
                             .textContent =
                             `${(
-                                totalBytes / 1024
+                                totalBytes /
+                                1024
                             ).toFixed(1)} KB`;
 
                     }
@@ -2437,17 +2161,14 @@ function setupPerformanceTelemetry() {
 }
 
 
-
 /* ============================================================
-   NETWORK LIVE CHANGES
+   NETWORK LISTENERS
 ============================================================ */
 
 function setupNetworkListeners() {
 
     const connection =
-        navigator.connection ||
-        navigator.mozConnection ||
-        navigator.webkitConnection;
+        getConnection();
 
 
     if (connection) {
@@ -2457,8 +2178,7 @@ function setupNetworkListeners() {
             () => {
 
                 if (
-                    networkSetting ===
-                    "AUTO"
+                    networkSetting === "AUTO"
                 ) {
 
                     updateAdaptiveEngine();
@@ -2476,8 +2196,7 @@ function setupNetworkListeners() {
         () => {
 
             if (
-                networkSetting ===
-                "AUTO"
+                networkSetting === "AUTO"
             ) {
 
                 updateAdaptiveEngine();
@@ -2493,8 +2212,7 @@ function setupNetworkListeners() {
         () => {
 
             if (
-                networkSetting ===
-                "AUTO"
+                networkSetting === "AUTO"
             ) {
 
                 updateAdaptiveEngine();
@@ -2507,19 +2225,15 @@ function setupNetworkListeners() {
 }
 
 
-
 /* ============================================================
-   ESCAPE
+   ESCAPE KEY
 ============================================================ */
 
 document.addEventListener(
     "keydown",
     event => {
 
-        if (
-            event.key ===
-            "Escape"
-        ) {
+        if (event.key === "Escape") {
 
             closeConfig();
 
@@ -2536,9 +2250,8 @@ document.addEventListener(
 );
 
 
-
 /* ============================================================
-   EXPLORE BUTTON
+   EXPLORE
 ============================================================ */
 
 function setupExplore() {
@@ -2550,15 +2263,13 @@ function setupExplore() {
 
                 $("products")
                     ?.scrollIntoView({
-                        behavior:
-                            "smooth"
+                        behavior: "smooth"
                     });
 
             }
         );
 
 }
-
 
 
 /* ============================================================
@@ -2579,7 +2290,7 @@ async function init() {
 
     setupCart();
 
-    setupHighEndHover();
+    setupHighModeTilt();
 
     setupNetworkListeners();
 
@@ -2589,26 +2300,46 @@ async function init() {
 
 
     /*
-       Initial detection
+        Detect first.
     */
 
-    updateAdaptiveEngine();
+    currentNetwork =
+        detectNetwork();
+
+    currentDevice =
+        detectDevice();
 
 
     /*
-       Load backend catalog
-       with local fallback.
+        Load products.
     */
 
     await loadProducts();
 
 
     /*
-       Apply adaptive mode again
-       after catalog loads.
+        Optional active bandwidth test.
+        Does not block initial UI.
     */
 
+    measureBandwidth()
+        .then(() => {
+
+            if (
+                networkSetting === "AUTO"
+            ) {
+
+                updateAdaptiveEngine();
+
+            }
+
+        });
+
+
     updateAdaptiveEngine();
+
+
+    updateCart();
 
 
     console.log(
