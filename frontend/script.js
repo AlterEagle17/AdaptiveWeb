@@ -2007,4 +2007,83 @@
         );
 
 
-        /* Adaptive
+        /* Adaptive Engine telemetry */
+
+        if (
+            window.AdaptiveEngine &&
+            typeof window.AdaptiveEngine
+                .initPerformanceMonitoring ===
+                "function"
+        ) {
+
+            window.AdaptiveEngine
+                .initPerformanceMonitoring(
+                    updateTelemetryUI
+                );
+
+        }
+
+
+        /* Initial */
+
+        updateUI();
+
+        syncWithBackend();
+
+    }
+
+
+    /* =====================================================
+       PUBLIC API
+       ===================================================== */
+
+    window.AdaptiveShop = {
+
+        addToCart,
+
+        removeFromCart,
+
+        updateCartQuantity,
+
+        openCartDrawer,
+
+        closeCartDrawer,
+
+        openProductModal,
+
+        closeProductModal,
+
+        openConfigModal,
+
+        closeConfigModal,
+
+        filterCategory,
+
+        clearSearchFilter,
+
+        scrollToProducts
+
+    };
+
+
+    /* =====================================================
+       START
+       ===================================================== */
+
+    if (
+        document.readyState ===
+        "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            init
+        );
+
+    } else {
+
+        init();
+
+    }
+
+})();
