@@ -2335,7 +2335,56 @@ function logPerformanceToConsole() {
 
     console.table(performanceData);
 }
+function logDeviceInformation() {
 
+    const cores =
+        navigator.hardwareConcurrency || "Unknown";
+
+    const ram =
+        navigator.deviceMemory
+            ? `${navigator.deviceMemory} GB (estimate)`
+            : "Unavailable";
+
+    const platform =
+        navigator.platform || "Unknown";
+
+    const browser =
+        navigator.userAgent;
+
+    const screenSize =
+        `${window.screen.width} × ${window.screen.height}`;
+
+    const pixelRatio =
+        window.devicePixelRatio || 1;
+
+    const online =
+        navigator.onLine;
+
+    const language =
+        navigator.language || "Unknown";
+
+    const deviceLevel =
+        currentDevice?.level || "Detecting...";
+
+    console.group(
+        "%c[AdaptiveWeb] Device Information",
+        "font-weight:bold;font-size:14px;"
+    );
+
+    console.table({
+        "Platform": platform,
+        "CPU / Logical Cores": cores,
+        "RAM": ram,
+        "Device Level": deviceLevel,
+        "Screen": screenSize,
+        "Pixel Ratio": pixelRatio,
+        "Online": online,
+        "Language": language,
+        "Browser": browser
+    });
+
+    console.groupEnd();
+}
 function setupPerformanceTelemetry() {
 
     if (
@@ -2771,7 +2820,7 @@ async function init() {
     currentDevice =
         detectDevice();
 
-
+      logDeviceInformation();
     /*
         Load backend products
     */
