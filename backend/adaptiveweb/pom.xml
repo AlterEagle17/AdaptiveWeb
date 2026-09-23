@@ -57,6 +57,10 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+<dependency>
+    <groupId>org.springframework.security</groupId>
+    <artifactId>spring-security-crypto</artifactId>
+</dependency>
 
     <build>
         <plugins>
